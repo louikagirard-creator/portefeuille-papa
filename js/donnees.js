@@ -85,7 +85,7 @@ function preparer(d, avis) {
     let precedent = null;
     for (let i = quotidien.length - 1; i >= 0; i--) if (quotidien[i][0] < session) { precedent = quotidien[i][1]; break; }
     const dernier = derIntra && (!derQuot || dateBourse(derIntra[0]) >= derQuot[0]) ? derIntra[1] : derQuot?.[1];
-    symboles[s] = { intraday, quotidien, session, precedent, dernier, tDernier: derIntra?.[0] ?? (derQuot ? msDate(derQuot[0]) : null), devise: e.devise || 'USD', avertissement: e.avertissement };
+    symboles[s] = { intraday, quotidien, session, precedent, dernier, tDernier: derIntra?.[0] ?? (derQuot ? msDate(derQuot[0]) : null), devise: e.devise || 'USD', avertissement: e.avertissement, estime: e.estime };
   }
   return { etat: 'ok', avis, genere: new Date(d.genere), symboles };
 }

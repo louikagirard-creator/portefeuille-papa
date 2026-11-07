@@ -2,7 +2,7 @@
 // et option « Comparer » (superposition d'indices en rendement %).
 // Sert au portefeuille total (symbole = null) et à chaque titre (symbole = « GOOGL », etc.).
 import { parametres } from './parametres.js';
-import { chargerPrix, serieSymbole, seriePortefeuille } from './donnees.js';
+import { chargerPrix, serieSymbole, seriePortefeuille, positionsValides } from './donnees.js';
 import { indicesSuggeres, serieIndice, tableauComparaison } from './comparaison.js';
 import { argent, argentSigne, pct, sens, dateHeure, dateCourte, heure, jourMois } from './format.js';
 import { PERIODES, TITRES, INDICES } from './config.js';
@@ -217,7 +217,15 @@ export class Graphique {
 
     if (this.chart) this.chart.destroy();
     this.chart = new window.Chart(this.$('canvas'), { type: 'line', data: { datasets }, options });
-    if (donnees.avis && !this.symbole) this.etat(donnees.avis, 'avis');
+    // Notes sous le graphique : métal estimé via un fonds, titres exclus du total faute de données.
+    const notes = [];
+    if (this.symbole && donnees.symboles[this.symbole]?.estime) notes.push(`Prix à l’once estimé à partir du fonds ${donnees.symboles[this.symbole].estime} (le prix au comptant n’est pas offert gratuitement).`);
+    if (!this.symbole) {
+      const { erreurs } = positionsValides(donnees, p.positions);
+      if (erreurs.length) notes.push('Non inclus dans le total faute de données : ' + erreurs.map((x) => TITRES[x.symbole]?.nom || x.symbole).join(', ') + '.');
+      if (donnees.avis) notes.push(donnees.avis);
+    }
+    this.etat(notes.join(' ') || null, 'avis');
   }
 
   /** Données indisponibles : message clair et, pour un titre, le widget TradingView en direct à la place. */

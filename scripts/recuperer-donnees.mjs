@@ -16,13 +16,23 @@ const FORCER_QUOTIDIEN = process.env.FORCER_QUOTIDIEN === '1';
 const SORTIE = 'data/prix.json';
 const API = 'https://api.twelvedata.com/time_series';
 
-// Même liste que js/config.js (titres + indices + taux de change).
+// Symboles demandés à Twelve Data (titres + indices + taux de change).
 const SYMBOLES = [
   'SPCX', 'GOOGL', 'SU', 'CVE', 'SNDK', 'WDC', 'EWT',
-  'XAU/USD', 'XAG/USD', 'XPT/USD', 'XPD/USD',
+  'XAU/USD', 'SLV', 'PPLT', 'PALL',
   'SPY', 'QQQ', 'DIA', 'EWC',
   'USD/CAD'
 ];
+
+// L'argent, le platine et le palladium au comptant ne sont pas offerts dans le plan gratuit.
+// On les estime à partir des fonds qui détiennent le métal physique (SLV, PPLT, PALL) :
+// prix à l'once ≈ prix du fonds × facteur, facteur calibré sur le prix au comptant connu du 6 nov. 2026.
+// Les frais des fonds font dériver le facteur d'environ 0,5 % par an : estimation, pas un prix exact.
+const ESTIMES = {
+  'XAG/USD': { fonds: 'SLV', date: '2026-11-06', comptant: 51.77 },
+  'XPT/USD': { fonds: 'PPLT', date: '2026-11-06', comptant: 1526.5 },
+  'XPD/USD': { fonds: 'PALL', date: '2026-11-06', comptant: 1012 }
+};
 
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 const lots = (arr, n) => Array.from({ length: Math.ceil(arr.length / n) }, (_, i) => arr.slice(i * n, i * n + n));
@@ -131,6 +141,21 @@ async function main() {
     symboles[s] = entree;
   }
 
+  // Métaux estimés à partir de leur fonds.
+  for (const [metal, e] of Object.entries(ESTIMES)) {
+    const f = symboles[e.fonds];
+    const ref = f?.quotidien?.find(([d]) => d === e.date)?.[1];
+    if (!f || f.erreur || !ref) { symboles[metal] = { erreur: f?.erreur || 'Estimation impossible (fonds ' + e.fonds + ')' }; continue; }
+    const k = e.comptant / ref;
+    symboles[metal] = {
+      devise: 'USD',
+      estime: e.fonds,
+      intraday: f.intraday.map(([t, v]) => [t, +(v * k).toFixed(4)]),
+      quotidien: f.quotidien.map(([d, v]) => [d, +(v * k).toFixed(4)]),
+      ...(f.avertissement ? { avertissement: f.avertissement } : {})
+    };
+  }
+
   const limite = Object.values(intra).some((r) => r.erreur === 'Limite d’appels atteinte');
   const sortie = {
     etat: nbOk ? 'ok' : (limite ? 'limite' : 'erreur'),
@@ -141,8 +166,9 @@ async function main() {
     symboles
   };
   await writeFile(SORTIE, JSON.stringify(sortie));
-  console.log(`prix.json écrit : ${nbOk}/${SYMBOLES.length} symboles OK`);
+  console.log(`prix.json écrit : ${nbOk}/${SYMBOLES.length} symboles OK (+ ${Object.keys(ESTIMES).length} métaux estimés)`);
   for (const [s, e] of Object.entries(symboles)) if (e.erreur || e.avertissement) console.log(' -', s, e.erreur || e.avertissement);
+  for (const m of Object.keys(ESTIMES)) if (!symboles[m].erreur) console.log(' -', m, 'estimé via', symboles[m].estime);
 }
 
 main().catch(async (e) => {
