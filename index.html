@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Portefeuille de papa</title>
+<meta name="description" content="Ses placements en direct, et pourquoi ça bouge.">
+<meta name="theme-color" content="#f4f6f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101413" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Portefeuille">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f5c4a'/%3E%3Cpath d='M6 22l6-7 5 4 9-10' stroke='%23fff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: une colonne de lecture, sections en cartes, grilles qui passent à 1 colonne sur téléphone. */
+:root {
+  --bg: #f4f6f5; --panel: #ffffff; --fg: #17201d; --muted: #5d6b66; --line: #dbe2df;
+  --accent: #1f6b55; --accent-soft: #d8ebe4; --up: #1b7a4a; --down: #b4362c; --warn: #9a6a00;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #101413; --panel: #171d1b; --fg: #e7eeeb; --muted: #97a59f; --line: #2a3330;
+    --accent: #5cc4a2; --accent-soft: #1d3a31; --up: #4cc38a; --down: #ef7b70; --warn: #e0b04a; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--sans); }
+.wrap { max-width: 72rem; margin: 0 auto; padding-block: 0 4rem;
+  padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+header.top { padding-top: max(20px, env(safe-area-inset-top)); display: flex; flex-direction: column; gap: .6rem; }
+h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1.1; margin: .4rem 0 0; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font-family: var(--serif); font-weight: 600; font-size: 1.55rem; line-height: 1.2; margin: 0; text-wrap: balance; }
+h3 { font-size: 1.02rem; font-weight: 600; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--accent); }
+.lede { color: var(--muted); font-size: 1.05rem; }
+.warn { font-size: .82rem; color: var(--muted); }
+.stamp { font-size: .78rem; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+.live { display: inline-flex; align-items: center; gap: .4rem; }
+.live::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--up); }
+@media (prefers-reduced-motion: no-preference) { .live::before { animation: pulse 2s ease-in-out infinite; } }
+@keyframes pulse { 50% { opacity: .35; } }
+nav.jump { position: sticky; top: 0; z-index: 20; background: var(--bg); padding-block: .6rem; margin-top: .4rem;
+  display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
+nav.jump::-webkit-scrollbar { display: none; }
+nav.jump a { flex: none; font-size: .85rem; padding: .4rem .8rem; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; }
+nav.jump a:focus-visible, nav.jump a:hover { border-color: var(--accent); }
+.tape { margin-top: 1rem; min-height: 46px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); }
+section { display: flex; flex-direction: column; gap: 1rem; padding-top: 2.4rem; scroll-margin-top: 3.5rem; }
+.intro { color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 1rem; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem; display: flex; flex-direction: column; gap: .7rem; min-width: 0; }
+.card .head { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+.tick { font-size: .75rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.tv { height: 190px; min-width: 0; }
+.tv iframe { border: 0; }
+.why { border-top: 1px solid var(--line); padding-top: .7rem; display: flex; flex-direction: column; gap: .5rem; font-size: .95rem; }
+.k { font-weight: 600; }
+.pill { font-size: .75rem; padding: .15rem .55rem; border-radius: 999px; background: var(--accent-soft); color: var(--fg); }
+.pill.alert { background: color-mix(in srgb, var(--warn) 22%, transparent); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: .8rem; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: .85rem; display: flex; flex-direction: column; gap: .15rem; }
+.tile .lab { font-size: .72rem; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+.tile .num { font-family: var(--serif); font-size: 1.9rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tile .sub { font-size: .8rem; color: var(--muted); }
+.down { color: var(--down); } .up { color: var(--up); }
+.chart { position: relative; height: 240px; min-width: 0; }
+.chart.tall { height: 560px; }
+.chart.short { height: 170px; }
+.small { font-size: .82rem; color: var(--muted); }
+ol.time { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .55rem; }
+ol.time li { display: grid; grid-template-columns: 5.2rem 1fr; gap: .6rem; font-size: .93rem; }
+ol.time time { color: var(--muted); font-size: .8rem; padding-top: .15rem; font-variant-numeric: tabular-nums; }
+footer { margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1rem; font-size: .8rem; color: var(--muted); }
+footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <span class="stamp live">Prix en direct · explications au <span data-maj>7 novembre 2026</span></span>
+  <h1>Portefeuille de papa</h1>
+  <p class="lede">Ses placements, en direct, et pourquoi ça bouge. Semaine du 2 au 6 novembre : grosse correction en techno (Taïwan, mémoire, Google), pétrole tenu en haut par la crise d'Ormuz, métaux précieux encore loin de leurs records de janvier.</p>
+  <p class="warn">Information seulement, pas un conseil financier. Les prix en direct viennent de TradingView et peuvent avoir un léger délai selon la bourse. Toujours valider auprès du courtier avant d'acheter ou de vendre.</p>
+</header>
+
+<nav class="jump" aria-label="Sections">
+  <a href="#actions">Actions</a>
+  <a href="#metaux">Métaux</a>
+  <a href="#taiwan">Chine–Taïwan</a>
+  <a href="#ormuz">Ormuz</a>
+  <a href="#petrole">Pétrole canadien</a>
+  <a href="#devises">Devises</a>
+</nav>
+
+<div class="tape" id="tape"></div>
+
+<section id="actions">
+  <h2>Ses actions</h2>
+  <p class="intro">Prix et graphique sur un an, en direct. Sous chaque titre : ce qui l'a fait bouger cette semaine et quoi surveiller.</p>
+  <div class="grid">
+
+    <article class="card">
+      <div class="head"><h3>SpaceX</h3><span class="tick">SPCX · Nasdaq</span></div>
+      <div class="tv" data-tv="NASDAQ:SPCX"></div>
+      <div class="why">
+        <p><span class="k">Pourquoi ça bouge.</span> Entrée en bourse le 12 juin 2026 à 135 $ US, une des plus grosses IPO de l'histoire. Le titre a grimpé jusqu'à environ 225 $ puis est retombé sous 105 $ en août. Cette semaine, il a glissé sous son prix d'IPO : le marché craint les suites des élections au Texas, où SpaceX est basée, et doute de ses projets de centres de données pour l'IA. Il a repris un peu vendredi (134,27 $).</p>
+        <p><span class="k">À surveiller.</span> S'il tient autour de 135 $. Les revenus de Starlink, qui font l'essentiel de la valeur, et les annonces sur les centres de données.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="head"><h3>Alphabet (Google)</h3><span class="tick">GOOGL · Nasdaq</span></div>
+      <div class="tv" data-tv="NASDAQ:GOOGL"></div>
+      <div class="why">
+        <p><span class="k">Pourquoi ça bouge.</span> Après ses résultats, l'action a perdu 13 % en une journée, la pire chute de son histoire. Le marché a peur de la facture de l'IA : environ 200 milliards $ US d'investissements prévus en 2026, et un flux de trésorerie disponible tombé à −9 milliards. Environ −19 % sur un mois et −10 % depuis le 1er janvier.</p>
+        <p><span class="k">À surveiller.</span> Si le cloud et l'IA rapportent assez pour justifier ces dépenses. La cible moyenne des analystes reste autour de 413 $ US, bien au-dessus du cours.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="head"><h3>Suncor Énergie</h3><span class="tick">SU · TSX</span></div>
+      <div class="tv" data-tv="TSX:SU"></div>
+      <div class="why">
+        <p><span class="k">Pourquoi ça bouge.</span> Trimestre record au T3 : bénéfice ajusté de 2,84 $ par action contre 2,25 $ attendu. L'action a quand même reculé d'environ 4 % le jour des résultats, les investisseurs ayant déjà « acheté » la bonne nouvelle. Suncor rachète ses propres actions pour 750 M$ par mois et verse 0,66 $ de dividende par trimestre.</p>
+        <p><span class="k">À surveiller.</span> Le pétrole cher à cause d'Ormuz l'aide beaucoup. Une réouverture du détroit ferait baisser le baril vite. L'escompte du pétrole canadien (WCS) lui nuit.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="head"><h3>Cenovus Énergie</h3><span class="tick">CVE · TSX</span></div>
+      <div class="tv" data-tv="TSX:CVE"></div>
+      <div class="why">
+        <p><span class="k">Pourquoi ça bouge.</span> Bénéfice ajusté de 1,83 $ par action contre 1,55 $ attendu, et un flux de trésorerie record. La production 2026 devrait dépasser 1 million de barils équivalent pétrole par jour. Réaction du titre plutôt tiède.</p>
+        <p><span class="k">À surveiller.</span> Même logique que Suncor : il profite du pétrole cher et souffre si l'escompte WCS s'élargit.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="head"><h3>Sandisk</h3><span class="pill alert">Division 8 pour 1 le 19 nov.</span></div>
+      <div class="tv" data-tv="NASDAQ:SNDK"></div>
+      <div class="why">
+        <p><span class="k">Pourquoi ça bouge.</span> Mémoire flash (SSD, cartes), séparée de Western Digital en 2025. Le titre a explosé avec la demande de stockage pour l'IA, puis a dégringolé début novembre : un législateur américain a réclamé une pause sur l'IA et les prix de la mémoire inquiètent. Rebond d'environ 10 % vendredi.</p>
+        <p><span class="k">Important.</span> Le 19 novembre, chaque action devient 8 actions : le prix affiché sera divisé par 8 et il aura 8 fois plus d'actions. La valeur de son placement ne change pas. Le graphique va montrer une « chute » ce jour-là : c'est normal.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="head"><h3>Western Digital</h3><span class="tick">WDC · Nasdaq</span></div>
+      <div class="tv" data-tv="NASDAQ:WDC"></div>
+      <div class="why">
+        <p><span class="k">Pourquoi ça bouge.</span> Disques durs pour les centres de données. Même vague que Sandisk : grosse hausse portée par l'IA, puis correction brutale, environ −30 % sur un mois, dont −17 % le 5 novembre seulement.</p>
+        <p><span class="k">À surveiller.</span> Les commandes des géants du cloud (Google en est un) et le prix du stockage. Si Google coupe ses dépenses, Sandisk et Western Digital le sentent.</p>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section id="metaux">
+  <h2>Or, argent, platine, palladium</h2>
+  <p class="intro">Prix au comptant en $ US l'once, en direct. Au 6 novembre, chacun reste loin de son record.</p>
+  <div class="grid">
+    <article class="card"><div class="head"><h3>Or</h3><span class="tick">Record 5 595 $ · 29 janv. 2026</span></div><div class="tv" data-tv="OANDA:XAUUSD"></div></article>
+    <article class="card"><div class="head"><h3>Argent</h3><span class="tick">Record 121,62 $ · janv. 2026</span></div><div class="tv" data-tv="OANDA:XAGUSD"></div></article>
+    <article class="card"><div class="head"><h3>Platine</h3><span class="tick">Record ≈ 2 920 $</span></div><div class="tv" data-tv="OANDA:XPTUSD"></div></article>
+    <article class="card"><div class="head"><h3>Palladium</h3><span class="tick">Record 3 440 $ · 2022</span></div><div class="tv" data-tv="OANDA:XPDUSD"></div></article>
+  </div>
+  <div class="grid">
+    <article class="card">
+      <h3>Combien sous leur record (au 6 nov.)</h3>
+      <div class="chart short"><canvas id="cMetaux" aria-label="Écart des métaux avec leur record"></canvas></div>
+    </article>
+    <article class="card">
+      <h3>Pourquoi ça bouge</h3>
+      <p>En janvier, la guerre avec l'Iran et la peur de l'inflation ont poussé l'or au-dessus de 5 500 $ US. Depuis, les gros acheteurs ont pris leurs profits et le dollar US s'est renforcé, ce qui pèse sur les métaux.</p>
+      <p>L'argent, le platine et le palladium sont aussi des métaux industriels (panneaux solaires, électronique, pots catalytiques). Ils baissent plus fort que l'or quand l'économie ralentit et que la techno corrige : l'argent a perdu 13 % en un mois.</p>
+      <p><span class="k">À surveiller.</span> Une escalade avec l'Iran ou autour de Taïwan pousserait l'or à la hausse (valeur refuge). Une réouverture d'Ormuz et un dollar US fort le freineraient.</p>
+    </article>
+  </div>
+</section>
+
+<section id="taiwan">
+  <h2>Chine et Taïwan : l'enjeu militaire et économique</h2>
+  <div class="tiles">
+    <div class="tile"><span class="lab">TAIEX, 6 nov.</span><span class="num">39 702</span><span class="sub">points</span></div>
+    <div class="tile"><span class="lab">Séance du 6 nov.</span><span class="num down">−4,5 %</span><span class="sub">sous les 40 000</span></div>
+    <div class="tile"><span class="lab">Sur la semaine</span><span class="num down">−12,2 %</span><span class="sub">4e semaine de baisse</span></div>
+    <div class="tile"><span class="lab">Incursions aériennes</span><span class="num">159</span><span class="sub">avions chinois en septembre</span></div>
+  </div>
+  <article class="card">
+    <div class="head"><h3>Bourse de Taïwan (TAIEX), en direct</h3><span class="tick">TWSE</span></div>
+    <div class="tv" data-tv="TWSE:TAIEX"></div>
+  </article>
+  <div class="grid">
+    <article class="card">
+      <h3>Militaire</h3>
+      <p>Pékin considère Taïwan comme une province à « réunifier », par la force si nécessaire. Il n'y a pas de guerre, mais une pression quotidienne : avions, navires de guerre et garde-côtes autour de l'île.</p>
+      <p>Le 6 novembre, des analystes américains (ISW et AEI) signalent un possible grand exercice non annoncé simulant un encerclement de Taïwan, avec des forces de trois commandements chinois. Ce n'est pas encore confirmé.</p>
+      <p>Les incursions aériennes (159 en septembre) sont moins de la moitié des niveaux de 2024 et 2025, mais les garde-côtes chinois sont entrés 4 fois dans les eaux de Kinmen en octobre. Une vente d'armes américaine d'environ 14 milliards $ US est bloquée.</p>
+      <p>Selon des experts taïwanais, les purges dans l'armée chinoise rendent une guerre planifiée moins probable, mais un accident ou une erreur de calcul plus à craindre.</p>
+    </article>
+    <article class="card">
+      <h3>Économique</h3>
+      <p>Taïwan, surtout via TSMC, fabrique la très grande majorité des puces les plus avancées du monde : celles des serveurs d'IA, des téléphones, des voitures. Un blocus couperait l'approvisionnement de presque toute la techno mondiale.</p>
+      <p>C'est le risque de fond derrière la Bourse de Taïwan, et indirectement derrière Google, Sandisk et Western Digital, qui dépendent tous de ces puces.</p>
+      <p>Cette semaine, la chute du TAIEX vient surtout de la vente massive des titres techno à Wall Street, pas d'un événement militaire. La Bourse de Taïwan est en grande partie TSMC : elle suit la techno américaine.</p>
+      <p><span class="k">À surveiller.</span> Le sommet de l'APEC, que la Chine accueille ce mois-ci (rencontre possible entre les présidents américain et chinois), la confirmation de l'exercice militaire et le sort de la vente d'armes.</p>
+    </article>
+  </div>
+</section>
+
+<section id="ormuz">
+  <h2>Détroit d'Ormuz : combien de bateaux passent</h2>
+  <p class="intro">Entre l'Iran et Oman, ce passage transportait environ 25 % du pétrole transporté par mer. Il est presque fermé depuis le 28 février 2026. Au 7 novembre, on en est au jour 253 de la crise et 113 navires attendent dans le Golfe.</p>
+  <div class="tiles">
+    <div class="tile"><span class="lab">1 jour (6 nov.)</span><span class="num">13</span><span class="sub">navires · normal ≈ 85</span></div>
+    <div class="tile"><span class="lab">7 derniers jours</span><span class="num">61</span><span class="sub">navires · normal ≈ 594</span></div>
+    <div class="tile"><span class="lab">30 derniers jours</span><span class="num">148</span><span class="sub">navires · normal ≈ 2 544</span></div>
+    <div class="tile"><span class="lab">Pétroliers, 7 jours</span><span class="num">20</span><span class="sub">le reste : vraquiers, cargos</span></div>
+  </div>
+  <div class="grid">
+    <article class="card">
+      <h3>Jour, semaine, mois : actuel vs normal</h3>
+      <p class="small">Vert : navires observés. Gris : trafic normal d'avant la crise.</p>
+      <div class="chart short"><canvas id="cOrmuzPer" aria-label="Trafic actuel comparé au normal"></canvas></div>
+    </article>
+    <article class="card">
+      <h3>Moyenne de navires par jour, chaque mois de 2026</h3>
+      <p class="small">Ligne pointillée : normal (≈ 85 par jour). *Novembre partiel, autre outil de comptage.</p>
+      <div class="chart"><canvas id="cOrmuzMois" aria-label="Navires par jour, par mois"></canvas></div>
+    </article>
+    <article class="card">
+      <h3>Navires par jour, trois dernières semaines</h3>
+      <p class="small">Navires commerciaux visibles, entrées et sorties.</p>
+      <div class="chart"><canvas id="cOrmuzJour" aria-label="Navires par jour, 19 oct. au 6 nov."></canvas></div>
+    </article>
+    <article class="card">
+      <h3>Comment on en est arrivé là</h3>
+      <ol class="time">
+        <li><time>28 févr.</time><span>Frappes américaines et israéliennes sur l'Iran. Les Gardiens de la révolution attaquent des pétroliers et minent le passage.</span></li>
+        <li><time>8 avr.</time><span>Cessez-le-feu de deux semaines. Le 13, blocus américain des ports iraniens.</span></li>
+        <li><time>17 juin</time><span>Mémorandum d'Islamabad pour finir la guerre. Le trafic remonte quelques jours.</span></li>
+        <li><time>19–20 juin</time><span>L'Iran referme le détroit. La trêve s'effondre le 8 juillet.</span></li>
+        <li><time>25 août</time><span>Washington dit avoir déminé le couloir de navigation.</span></li>
+        <li><time>Octobre</time><span>Mois record d'attaques. Le GFS Pride coule le 14.</span></li>
+        <li><time>2 nov.</time><span>L'Iran dit pouvoir rouvrir en deux jours si ses conditions sont acceptées. Le Qatar sert de médiateur.</span></li>
+      </ol>
+    </article>
+  </div>
+  <article class="card">
+    <h3>Ce que ça veut dire pour ses placements</h3>
+    <p>Moins de pétrole du Golfe sur le marché, c'est un baril plus cher : le Brent a touché 126 $ US pendant la crise et tourne autour de 98 $. C'est la principale raison des profits record de Suncor et Cenovus, qui vendent du pétrole d'Alberta, loin de la zone de conflit.</p>
+    <p>Le revers : une entente avec l'Iran et une réouverture feraient chuter le prix rapidement. C'est le plus gros risque à court terme pour ses deux pétrolières. La crise soutient aussi l'or.</p>
+  </article>
+</section>
+
+<section id="petrole">
+  <h2>Le Canada parmi les 20 plus gros exportateurs de pétrole</h2>
+  <div class="tiles">
+    <div class="tile"><span class="lab">Rang du Canada</span><span class="num">4<sup>e</sup></span><span class="sub">au monde en 2025</span></div>
+    <div class="tile"><span class="lab">Exportations</span><span class="num">4,13</span><span class="sub">millions de barils / jour</span></div>
+    <div class="tile"><span class="lab">Part du monde</span><span class="num">5,4 %</span><span class="sub">des exportations</span></div>
+    <div class="tile"><span class="lab">Pétrole canadien WCS</span><span class="num">≈ 59 $</span><span class="sub">US/baril · 4 nov.</span></div>
+  </div>
+  <div class="grid">
+    <article class="card"><div class="head"><h3>Brent, en direct</h3><span class="tick">Référence mondiale</span></div><div class="tv" data-tv="TVC:UKOIL"></div></article>
+    <article class="card"><div class="head"><h3>WTI, en direct</h3><span class="tick">Référence nord-américaine</span></div><div class="tv" data-tv="TVC:USOIL"></div></article>
+  </div>
+  <div class="grid">
+    <article class="card">
+      <h3>Exportations de pétrole, milliers de barils par jour (2025)</h3>
+      <p class="small">Brut et produits raffinés ensemble, selon l'OPEP. Le Canada en vert.</p>
+      <div class="chart tall"><canvas id="cExport" aria-label="Les 20 plus gros exportateurs de pétrole"></canvas></div>
+    </article>
+    <article class="card">
+      <h3>Ce qu'il faut savoir</h3>
+      <p>En brut seulement, la Régie de l'énergie du Canada compte 4,3 millions de barils par jour exportés en 2025, un record. La grande majorité part vers les États-Unis.</p>
+      <p>Le pipeline Trans Mountain (890 000 barils par jour), ouvert en 2024, permet enfin d'en envoyer vers l'Asie par la côte du Pacifique. Le train ne transporte presque plus rien : environ 77 000 barils par jour.</p>
+      <p>Le pétrole de l'Alberta (WCS) se vend moins cher que le pétrole américain (WTI) : il est lourd, plus coûteux à raffiner et à transporter. L'écart est d'environ 28,75 $ US le baril. Plus cet écart est petit, mieux c'est pour Suncor et Cenovus.</p>
+      <p>Le Canada ne dépend pas d'Ormuz : quand le Golfe est bloqué, son pétrole devient plus recherché.</p>
+    </article>
+  </div>
+</section>
+
+<section id="devises">
+  <h2>Dollar américain, dollar canadien, euro</h2>
+  <div class="grid">
+    <article class="card"><div class="head"><h3>USD/CAD</h3><span class="tick">$ CA pour 1 $ US</span></div><div class="tv" data-tv="FX_IDC:USDCAD"></div></article>
+    <article class="card"><div class="head"><h3>EUR/USD</h3><span class="tick">$ US pour 1 €</span></div><div class="tv" data-tv="FX:EURUSD"></div></article>
+    <article class="card"><div class="head"><h3>EUR/CAD</h3><span class="tick">$ CA pour 1 €</span></div><div class="tv" data-tv="FX_IDC:EURCAD"></div></article>
+  </div>
+  <div class="grid">
+    <article class="card">
+      <h3>Moyennes mensuelles 2026</h3>
+      <p class="small">Variation depuis le début de l'année, en %, pour comparer les trois sur une même échelle.</p>
+      <div class="chart"><canvas id="cFx" aria-label="Variation des devises en 2026"></canvas></div>
+    </article>
+    <article class="card">
+      <h3>Pourquoi ça compte pour lui</h3>
+      <p>SpaceX, Google, Sandisk et Western Digital sont en dollars US. Quand le dollar US monte face au huard, ces placements valent plus en dollars canadiens, même si l'action ne bouge pas. L'inverse est aussi vrai.</p>
+      <p>Le dollar US s'est renforcé face au huard depuis juin, avec un sommet en octobre (1,414 en moyenne). L'euro, lui, recule face aux deux depuis l'été : un voyage en Europe coûte un peu moins cher qu'en début d'année.</p>
+      <p>Le pétrole cher aide normalement le huard, mais la force du dollar US l'emporte en ce moment.</p>
+    </article>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Sources.</strong> Explications et chiffres fixes au <span data-maj>7 novembre 2026</span>, mis à jour chaque samedi.</p>
+  <ul>
+    <li>Prix en direct : widgets TradingView (certaines bourses avec délai).</li>
+    <li>Actions : Yahoo Finance, Seeking Alpha, Investing.com, Motley Fool, MarketBeat, 24/7 Wall St.</li>
+    <li>Métaux : Trading Economics, Fortune, Kitco, Metalcharts.</li>
+    <li>Taïwan : Focus Taiwan, Taipei Times, ISW/AEI, The Diplomat.</li>
+    <li>Ormuz : hormuz.now (comptage AIS des navires commerciaux de 80 m et plus), IMF PortWatch, Straits.live, Wikipédia. Les outils ne comptent pas tous de la même façon.</li>
+    <li>Pétrole : Bulletin statistique de l'OPEP 2026 via Visual Capitalist (données 2025), Régie de l'énergie du Canada, EnergyNow.</li>
+    <li>Devises : moyennes de la BCE via fxrates.com.</li>
+    <li>Rien ici n'est un conseil financier.</li>
+  </ul>
+</footer>
+
+</div>
+<script src="data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
