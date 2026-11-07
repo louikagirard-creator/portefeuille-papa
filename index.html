@@ -3,94 +3,60 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Portefeuille de papa</title>
-<meta name="description" content="Ses placements en direct, et pourquoi ça bouge.">
-<meta name="theme-color" content="#f4f6f5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#101413" media="(prefers-color-scheme: dark)">
+<title>Portefeuille de Michel Girard</title>
+<meta name="description" content="Le portefeuille de Michel Girard : valeur, graphiques, calendrier et explications.">
+<meta name="theme-color" content="#f4f6f5">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Portefeuille">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f5c4a'/%3E%3Cpath d='M6 22l6-7 5 4 9-10' stroke='%23fff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-title" content="Michel">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1830'/%3E%3Crect x='4' y='4' width='56' height='56' rx='11' fill='none' stroke='%23d4af5a' stroke-width='2'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Georgia,serif' font-size='27' font-weight='700' fill='%23d4af5a'%3EMG%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icone-mg.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-<style>
-/* Layout: une colonne de lecture, sections en cartes, grilles qui passent à 1 colonne sur téléphone. */
-:root {
-  --bg: #f4f6f5; --panel: #ffffff; --fg: #17201d; --muted: #5d6b66; --line: #dbe2df;
-  --accent: #1f6b55; --accent-soft: #d8ebe4; --up: #1b7a4a; --down: #b4362c; --warn: #9a6a00;
-  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #101413; --panel: #171d1b; --fg: #e7eeeb; --muted: #97a59f; --line: #2a3330;
-    --accent: #5cc4a2; --accent-soft: #1d3a31; --up: #4cc38a; --down: #ef7b70; --warn: #e0b04a; color-scheme: dark; }
-}
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--sans); }
-.wrap { max-width: 72rem; margin: 0 auto; padding-block: 0 4rem;
-  padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
-header.top { padding-top: max(20px, env(safe-area-inset-top)); display: flex; flex-direction: column; gap: .6rem; }
-h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1.1; margin: .4rem 0 0; letter-spacing: -.01em; text-wrap: balance; }
-h2 { font-family: var(--serif); font-weight: 600; font-size: 1.55rem; line-height: 1.2; margin: 0; text-wrap: balance; }
-h3 { font-size: 1.02rem; font-weight: 600; margin: 0; }
-p { margin: 0; max-width: 68ch; }
-a { color: var(--accent); }
-.lede { color: var(--muted); font-size: 1.05rem; }
-.warn { font-size: .82rem; color: var(--muted); }
-.stamp { font-size: .78rem; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
-.live { display: inline-flex; align-items: center; gap: .4rem; }
-.live::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--up); }
-@media (prefers-reduced-motion: no-preference) { .live::before { animation: pulse 2s ease-in-out infinite; } }
-@keyframes pulse { 50% { opacity: .35; } }
-nav.jump { position: sticky; top: 0; z-index: 20; background: var(--bg); padding-block: .6rem; margin-top: .4rem;
-  display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
-nav.jump::-webkit-scrollbar { display: none; }
-nav.jump a { flex: none; font-size: .85rem; padding: .4rem .8rem; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; }
-nav.jump a:focus-visible, nav.jump a:hover { border-color: var(--accent); }
-.tape { margin-top: 1rem; min-height: 46px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); }
-section { display: flex; flex-direction: column; gap: 1rem; padding-top: 2.4rem; scroll-margin-top: 3.5rem; }
-.intro { color: var(--muted); }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 1rem; }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem; display: flex; flex-direction: column; gap: .7rem; min-width: 0; }
-.card .head { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
-.tick { font-size: .75rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
-.tv { height: 190px; min-width: 0; }
-.tv iframe { border: 0; }
-.tv, .tape { color-scheme: light; }
-.why { border-top: 1px solid var(--line); padding-top: .7rem; display: flex; flex-direction: column; gap: .5rem; font-size: .95rem; }
-.k { font-weight: 600; }
-.pill { font-size: .75rem; padding: .15rem .55rem; border-radius: 999px; background: var(--accent-soft); color: var(--fg); }
-.pill.alert { background: color-mix(in srgb, var(--warn) 22%, transparent); }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: .8rem; }
-.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: .85rem; display: flex; flex-direction: column; gap: .15rem; }
-.tile .lab { font-size: .72rem; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
-.tile .num { font-family: var(--serif); font-size: 1.9rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.tile .sub { font-size: .8rem; color: var(--muted); }
-.down { color: var(--down); } .up { color: var(--up); }
-.chart { position: relative; height: 240px; min-width: 0; }
-.chart.tall { height: 560px; }
-.chart.short { height: 170px; }
-.small { font-size: .82rem; color: var(--muted); }
-ol.time { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .55rem; }
-ol.time li { display: grid; grid-template-columns: 5.2rem 1fr; gap: .6rem; font-size: .93rem; }
-ol.time time { color: var(--muted); font-size: .8rem; padding-top: .15rem; font-variant-numeric: tabular-nums; }
-footer { margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1rem; font-size: .8rem; color: var(--muted); }
-footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3rem; }
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  // Applique le thème avant l'affichage (évite un flash de mauvaises couleurs). Le reste est dans js/parametres.js.
+  (function () {
+    try {
+      var p = JSON.parse(localStorage.getItem('mg-parametres') || '{}');
+      var t = p.theme && p.theme !== 'auto' ? p.theme : (matchMedia('(prefers-color-scheme: dark)').matches ? 'sombre' : 'clair');
+      var r = document.documentElement;
+      r.dataset.theme = t;
+      r.dataset.sombre = /sombre|classique|nuit/.test(t) ? '1' : '0';
+      if (p.gainsPertes) r.dataset.gp = p.gainsPertes;
+      if (p.densite) r.dataset.densite = p.densite;
+      if (p.accent) r.style.setProperty('--accent', p.accent);
+    } catch (e) { document.documentElement.dataset.theme = 'clair'; }
+  })();
+</script>
 </head>
 <body>
 <div class="wrap">
 
 <header class="top">
-  <span class="stamp live"><span>Prix en direct · explications au <span data-maj>7 novembre 2026</span></span></span>
-  <h1>Portefeuille de papa</h1>
-  <p class="lede">Ses placements, en direct, et pourquoi ça bouge. Semaine du 2 au 6 novembre : grosse correction en techno (Taïwan, mémoire, Google), pétrole tenu en haut par la crise d'Ormuz, métaux précieux encore loin de leurs records de janvier.</p>
-  <p class="warn">Information seulement, pas un conseil financier. Les prix en direct viennent de TradingView et peuvent avoir un léger délai selon la bourse. Toujours valider auprès du courtier avant d'acheter ou de vendre.</p>
+  <div class="barre">
+    <div class="marque">
+      <svg class="mono" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14"/><rect x="4" y="4" width="56" height="56" rx="11" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="2" style="fill:none;color:var(--sur-accent)"/><text x="32" y="42" text-anchor="middle" font-family="Georgia, serif" font-size="27" font-weight="700">MG</text></svg>
+      <div class="marque-txt">
+        <h1>Portefeuille de <span data-nom-complet>Michel Girard</span></h1>
+        <span class="stamp live"><span>Prix en direct · explications au <span data-maj>7 novembre 2026</span></span></span>
+      </div>
+    </div>
+    <button type="button" class="btn-icone" data-ouvrir-parametres aria-label="Ouvrir les paramètres" title="Paramètres">⚙️</button>
+  </div>
+  <div class="accueil">
+    <p class="salut" data-salut>Bonjour Michel</p>
+    <p class="resume" data-resume>&nbsp;</p>
+    <div class="acc-total"><strong data-total>—</strong><span class="acc-var" data-total-var></span></div>
+  </div>
+  <p class="bandeau" data-exemple hidden><span>Les montants utilisent des <strong>quantités d’exemple</strong>. Entre tes vraies positions pour voir la vraie valeur.</span><button type="button" class="btn btn-petit" data-ouvrir-parametres>Mes positions</button></p>
+  <p class="lede">Semaine du 2 au 6 novembre : grosse correction en techno (Taïwan, mémoire, Google), pétrole tenu en haut par la crise d'Ormuz, métaux précieux encore loin de leurs records de janvier.</p>
+  <p class="warn">Information seulement, pas un conseil financier. Les prix en direct viennent de TradingView, les graphiques de Twelve Data (mis à jour aux 15 minutes). Toujours valider auprès du courtier avant d'acheter ou de vendre.</p>
 </header>
 
 <nav class="jump" aria-label="Sections">
+  <a href="#portefeuille">Portefeuille</a>
+  <a href="#calendrier-sec">Calendrier</a>
   <a href="#actions">Actions</a>
   <a href="#metaux">Métaux</a>
   <a href="#taiwan">Chine–Taïwan</a>
@@ -101,14 +67,28 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
 
 <div class="tape" id="tape"></div>
 
+<section id="portefeuille">
+  <h2>Valeur du portefeuille</h2>
+  <article class="card">
+    <div class="gr-grand" data-graph="portefeuille"></div>
+    <p class="small" data-maj-prix></p>
+  </article>
+</section>
+
+<section id="calendrier-sec">
+  <h2>Calendrier du mois</h2>
+  <p class="intro">La valeur du portefeuille à la fermeture de chaque jour de bourse. Touche un jour pour voir le détail de chaque titre.</p>
+  <article class="card" id="calendrier"></article>
+</section>
+
 <section id="actions">
   <h2>Ses actions</h2>
-  <p class="intro">Prix et graphique sur un an, en direct. Sous chaque titre : ce qui l'a fait bouger cette semaine et quoi surveiller.</p>
+  <p class="intro">Prix par action en $ US, avec les périodes 1J, 1S, 1M et 1A et l’option Comparer. Sous chaque titre : ce qui l'a fait bouger cette semaine et quoi surveiller.</p>
   <div class="grid">
 
     <article class="card">
       <div class="head"><h3>SpaceX</h3><span class="tick">SPCX · Nasdaq</span></div>
-      <div class="tv" data-tv="NASDAQ:SPCX"></div>
+      <div data-graph="SPCX"></div>
       <div class="why">
         <p><span class="k">Pourquoi ça bouge.</span> Entrée en bourse le 12 juin 2026 à 135 $ US, une des plus grosses IPO de l'histoire. Le titre a grimpé jusqu'à environ 225 $ puis est retombé sous 105 $ en août. Cette semaine, il a glissé sous son prix d'IPO : le marché craint les suites des élections au Texas, où SpaceX est basée, et doute de ses projets de centres de données pour l'IA. Il a repris un peu vendredi (134,27 $).</p>
         <p><span class="k">À surveiller.</span> S'il tient autour de 135 $. Les revenus de Starlink, qui font l'essentiel de la valeur, et les annonces sur les centres de données.</p>
@@ -117,7 +97,7 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
 
     <article class="card">
       <div class="head"><h3>Alphabet (Google)</h3><span class="tick">GOOGL · Nasdaq</span></div>
-      <div class="tv" data-tv="NASDAQ:GOOGL"></div>
+      <div data-graph="GOOGL"></div>
       <div class="why">
         <p><span class="k">Pourquoi ça bouge.</span> Après ses résultats, l'action a perdu 13 % en une journée, la pire chute de son histoire. Le marché a peur de la facture de l'IA : environ 200 milliards $ US d'investissements prévus en 2026, et un flux de trésorerie disponible tombé à −9 milliards. Environ −19 % sur un mois et −10 % depuis le 1er janvier.</p>
         <p><span class="k">À surveiller.</span> Si le cloud et l'IA rapportent assez pour justifier ces dépenses. La cible moyenne des analystes reste autour de 413 $ US, bien au-dessus du cours.</p>
@@ -125,8 +105,8 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
     </article>
 
     <article class="card">
-      <div class="head"><h3>Suncor Énergie</h3><span class="tick">SU · TSX</span></div>
-      <div class="tv" data-tv="TSX:SU"></div>
+      <div class="head"><h3>Suncor Énergie</h3><span class="tick">SU · cotation NYSE</span></div>
+      <div data-graph="SU"></div>
       <div class="why">
         <p><span class="k">Pourquoi ça bouge.</span> Trimestre record au T3 : bénéfice ajusté de 2,84 $ par action contre 2,25 $ attendu. L'action a quand même reculé d'environ 4 % le jour des résultats, les investisseurs ayant déjà « acheté » la bonne nouvelle. Suncor rachète ses propres actions pour 750 M$ par mois et verse 0,66 $ de dividende par trimestre.</p>
         <p><span class="k">À surveiller.</span> Le pétrole cher à cause d'Ormuz l'aide beaucoup. Une réouverture du détroit ferait baisser le baril vite. L'escompte du pétrole canadien (WCS) lui nuit.</p>
@@ -134,8 +114,8 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
     </article>
 
     <article class="card">
-      <div class="head"><h3>Cenovus Énergie</h3><span class="tick">CVE · TSX</span></div>
-      <div class="tv" data-tv="TSX:CVE"></div>
+      <div class="head"><h3>Cenovus Énergie</h3><span class="tick">CVE · cotation NYSE</span></div>
+      <div data-graph="CVE"></div>
       <div class="why">
         <p><span class="k">Pourquoi ça bouge.</span> Bénéfice ajusté de 1,83 $ par action contre 1,55 $ attendu, et un flux de trésorerie record. La production 2026 devrait dépasser 1 million de barils équivalent pétrole par jour. Réaction du titre plutôt tiède.</p>
         <p><span class="k">À surveiller.</span> Même logique que Suncor : il profite du pétrole cher et souffre si l'escompte WCS s'élargit.</p>
@@ -144,7 +124,7 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
 
     <article class="card">
       <div class="head"><h3>Sandisk</h3><span class="pill alert">Division 8 pour 1 le 19 nov.</span></div>
-      <div class="tv" data-tv="NASDAQ:SNDK"></div>
+      <div data-graph="SNDK"></div>
       <div class="why">
         <p><span class="k">Pourquoi ça bouge.</span> Mémoire flash (SSD, cartes), séparée de Western Digital en 2025. Le titre a explosé avec la demande de stockage pour l'IA, puis a dégringolé début novembre : un législateur américain a réclamé une pause sur l'IA et les prix de la mémoire inquiètent. Rebond d'environ 10 % vendredi.</p>
         <p><span class="k">Important.</span> Le 19 novembre, chaque action devient 8 actions : le prix affiché sera divisé par 8 et il aura 8 fois plus d'actions. La valeur de son placement ne change pas. Le graphique va montrer une « chute » ce jour-là : c'est normal.</p>
@@ -153,7 +133,7 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
 
     <article class="card">
       <div class="head"><h3>Western Digital</h3><span class="tick">WDC · Nasdaq</span></div>
-      <div class="tv" data-tv="NASDAQ:WDC"></div>
+      <div data-graph="WDC"></div>
       <div class="why">
         <p><span class="k">Pourquoi ça bouge.</span> Disques durs pour les centres de données. Même vague que Sandisk : grosse hausse portée par l'IA, puis correction brutale, environ −30 % sur un mois, dont −17 % le 5 novembre seulement.</p>
         <p><span class="k">À surveiller.</span> Les commandes des géants du cloud (Google en est un) et le prix du stockage. Si Google coupe ses dépenses, Sandisk et Western Digital le sentent.</p>
@@ -165,12 +145,12 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
 
 <section id="metaux">
   <h2>Or, argent, platine, palladium</h2>
-  <p class="intro">Prix au comptant en $ US l'once, en direct. Au 6 novembre, chacun reste loin de son record.</p>
+  <p class="intro">Prix au comptant en $ US l'once. Au 6 novembre, chacun reste loin de son record.</p>
   <div class="grid">
-    <article class="card"><div class="head"><h3>Or</h3><span class="tick">Record 5 595 $ · 29 janv. 2026</span></div><div class="tv" data-tv="OANDA:XAUUSD"></div></article>
-    <article class="card"><div class="head"><h3>Argent</h3><span class="tick">Record 121,62 $ · janv. 2026</span></div><div class="tv" data-tv="OANDA:XAGUSD"></div></article>
-    <article class="card"><div class="head"><h3>Platine</h3><span class="tick">Record ≈ 2 920 $</span></div><div class="tv" data-tv="OANDA:XPTUSD"></div></article>
-    <article class="card"><div class="head"><h3>Palladium</h3><span class="tick">Record 3 440 $ · 2022</span></div><div class="tv" data-tv="OANDA:XPDUSD"></div></article>
+    <article class="card"><div class="head"><h3>Or</h3><span class="tick">Record 5 595 $ · 29 janv. 2026</span></div><div data-graph="XAU/USD"></div></article>
+    <article class="card"><div class="head"><h3>Argent</h3><span class="tick">Record 121,62 $ · janv. 2026</span></div><div data-graph="XAG/USD"></div></article>
+    <article class="card"><div class="head"><h3>Platine</h3><span class="tick">Record ≈ 2 920 $</span></div><div data-graph="XPT/USD"></div></article>
+    <article class="card"><div class="head"><h3>Palladium</h3><span class="tick">Record 3 440 $ · 2022</span></div><div data-graph="XPD/USD"></div></article>
   </div>
   <div class="grid">
     <article class="card">
@@ -196,7 +176,7 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
   </div>
   <article class="card">
     <div class="head"><h3>Bourse de Taïwan, en direct</h3><span class="tick">via le fonds EWT</span></div>
-    <div class="tv" data-tv="AMEX:EWT"></div>
+    <div data-graph="EWT"></div>
     <p class="small">L'indice TAIEX n'est pas diffusé gratuitement en direct. Le fonds iShares MSCI Taïwan (EWT), coté à New York, suit les mêmes grandes entreprises taïwanaises et bouge de la même façon. Les chiffres ci-dessus sont ceux du TAIEX au 6 novembre.</p>
   </article>
   <div class="grid">
@@ -315,7 +295,7 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
 <footer>
   <p><strong>Sources.</strong> Explications et chiffres fixes au <span data-maj>7 novembre 2026</span>, mis à jour chaque samedi.</p>
   <ul>
-    <li>Prix en direct : widgets TradingView (certaines bourses avec délai).</li>
+    <li>Prix en direct : widgets TradingView (certaines bourses avec délai). Graphiques, calendrier et comparaisons : Twelve Data, mis à jour aux 15 minutes pendant la bourse. Suncor et Cenovus y sont suivis par leur cotation à New York, et les indices par les fonds EWC (TSX), SPY (S&amp;P 500), QQQ (Nasdaq) et DIA (Dow Jones).</li>
     <li>Actions : Yahoo Finance, Seeking Alpha, Investing.com, Motley Fool, MarketBeat, 24/7 Wall St.</li>
     <li>Métaux : Trading Economics, Fortune, Kitco, Metalcharts.</li>
     <li>Taïwan : Focus Taiwan, Taipei Times, ISW/AEI, The Diplomat.</li>
@@ -327,8 +307,10 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
 </footer>
 
 </div>
+<p class="coeur">Fait avec ❤️ pour <span data-prenom>Michel</span></p>
 <script src="data.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="app.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
