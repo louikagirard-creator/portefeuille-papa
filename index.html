@@ -58,6 +58,7 @@ section { display: flex; flex-direction: column; gap: 1rem; padding-top: 2.4rem;
 .tick { font-size: .75rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
 .tv { height: 190px; min-width: 0; }
 .tv iframe { border: 0; }
+.tv, .tape { color-scheme: light; }
 .why { border-top: 1px solid var(--line); padding-top: .7rem; display: flex; flex-direction: column; gap: .5rem; font-size: .95rem; }
 .k { font-weight: 600; }
 .pill { font-size: .75rem; padding: .15rem .55rem; border-radius: 999px; background: var(--accent-soft); color: var(--fg); }
@@ -83,7 +84,7 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
 <div class="wrap">
 
 <header class="top">
-  <span class="stamp live">Prix en direct · explications au <span data-maj>7 novembre 2026</span></span>
+  <span class="stamp live"><span>Prix en direct · explications au <span data-maj>7 novembre 2026</span></span></span>
   <h1>Portefeuille de papa</h1>
   <p class="lede">Ses placements, en direct, et pourquoi ça bouge. Semaine du 2 au 6 novembre : grosse correction en techno (Taïwan, mémoire, Google), pétrole tenu en haut par la crise d'Ormuz, métaux précieux encore loin de leurs records de janvier.</p>
   <p class="warn">Information seulement, pas un conseil financier. Les prix en direct viennent de TradingView et peuvent avoir un léger délai selon la bourse. Toujours valider auprès du courtier avant d'acheter ou de vendre.</p>
@@ -194,8 +195,9 @@ footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3
     <div class="tile"><span class="lab">Incursions aériennes</span><span class="num">159</span><span class="sub">avions chinois en septembre</span></div>
   </div>
   <article class="card">
-    <div class="head"><h3>Bourse de Taïwan (TAIEX), en direct</h3><span class="tick">TWSE</span></div>
-    <div class="tv" data-tv="TWSE:TAIEX"></div>
+    <div class="head"><h3>Bourse de Taïwan, en direct</h3><span class="tick">via le fonds EWT</span></div>
+    <div class="tv" data-tv="AMEX:EWT"></div>
+    <p class="small">L'indice TAIEX n'est pas diffusé gratuitement en direct. Le fonds iShares MSCI Taïwan (EWT), coté à New York, suit les mêmes grandes entreprises taïwanaises et bouge de la même façon. Les chiffres ci-dessus sont ceux du TAIEX au 6 novembre.</p>
   </article>
   <div class="grid">
     <article class="card">

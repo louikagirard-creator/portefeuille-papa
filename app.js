@@ -32,7 +32,7 @@
       { proName: 'TSX:CVE', title: 'Cenovus' },
       { proName: 'NASDAQ:SNDK', title: 'Sandisk' },
       { proName: 'NASDAQ:WDC', title: 'Western Digital' },
-      { proName: 'TWSE:TAIEX', title: 'Taïwan' },
+      { proName: 'AMEX:EWT', title: 'Taïwan (EWT)' },
       { proName: 'OANDA:XAUUSD', title: 'Or' },
       { proName: 'OANDA:XAGUSD', title: 'Argent' },
       { proName: 'OANDA:XPTUSD', title: 'Platine' },
