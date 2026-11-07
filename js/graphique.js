@@ -194,7 +194,12 @@ export class Graphique {
       layout: { padding: { top: 6, right: 4 } },
       scales: {
         x: { type: 'linear', min: 0, max: pts.length - 1, grid: { display: p.grille, color: grille }, border: { color: grille },
-          ticks: { color: texte, maxTicksLimit: 5, maxRotation: 0, callback: (val) => etiquette(val, false) } },
+          // 4 étiquettes réparties également, toujours le premier et le dernier point, sans chevauchement.
+          afterBuildTicks: (axe) => {
+            const n = pts.length - 1;
+            axe.ticks = [...new Set([0, Math.round(n / 3), Math.round((2 * n) / 3), n])].map((value) => ({ value }));
+          },
+          ticks: { color: texte, maxRotation: 0, autoSkip: false, align: 'inner', callback: (val) => etiquette(val, false) } },
         y: { grid: { display: p.grille, color: grille }, border: { display: false },
           ticks: { color: texte, maxTicksLimit: 5, callback: (val) => (enPct ? pct(val, 0) : argent(val, devise, Math.abs(val) >= 100 ? 0 : 2)) } }
       },
