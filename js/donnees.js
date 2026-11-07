@@ -120,14 +120,46 @@ export function serieSymbole(donnees, sym, periode) {
     const pts = s.intraday.filter(([t]) => t >= fin - 7 * JOUR && new Date(t).getUTCMinutes() % 30 === 0);
     return { points: pts.map(([t, v]) => ({ t, v })), base: pts[0]?.[1], intraday: true };
   }
-  const jours = periode === '1A' ? 365 : 30;
   const derDate = s.quotidien[s.quotidien.length - 1]?.[0];
   if (!derDate) return { erreur: 'Pas d’historique' };
-  const debut = isoDate(msDate(derDate) - jours * JOUR);
-  const pts = s.quotidien.filter(([d]) => d >= debut).map(([d, v]) => ({ t: msDate(d), v }));
+  const complet = s.quotidien.map(([d, v]) => ({ t: msDate(d), v }));
+  const pts = tranche(complet, s.quotidien.map(([d]) => d), derDate, periode);
   // Ajoute le dernier prix connu si la séance du jour n'est pas encore dans l'historique.
-  if (s.session && s.session > derDate && s.dernier != null) pts.push({ t: msDate(s.session), v: s.dernier });
-  return { points: pts, base: pts[0]?.v, intraday: false };
+  if (s.session && s.session > derDate && s.dernier != null) pts.push({ t: msDate(s.session), v: s.dernier, live: true });
+  return { points: pts, base: pts[0]?.v, intraday: false, complet };
+}
+
+// ---------- Périodes quotidiennes ----------
+
+const JOURS_PERIODE = { '1M': 30, '3M': 91, '6M': 182, '1A': 365, '2A': 730 };
+
+/**
+ * Points d'une période quotidienne. « AAJ » (année à date) part de la dernière fermeture de l'année précédente,
+ * comme le calculent les courtiers; les autres partent de la première fermeture dans la fenêtre.
+ */
+function tranche(points, dates, derDate, periode) {
+  if (periode === 'AAJ') {
+    const debut = derDate.slice(0, 4) + '-01-01';
+    let i = dates.findIndex((d) => d >= debut);
+    if (i < 0) return [];
+    if (i > 0) i -= 1;
+    return points.slice(i);
+  }
+  const debut = isoDate(msDate(derDate) - (JOURS_PERIODE[periode] || 30) * JOUR);
+  const i = dates.findIndex((d) => d >= debut);
+  return i < 0 ? [] : points.slice(i);
+}
+
+/** Moyenne mobile simple sur n points (null tant qu'il n'y a pas assez d'historique). */
+export function moyenneMobile(complet, n) {
+  const res = new Map();
+  let somme = 0;
+  for (let i = 0; i < complet.length; i++) {
+    somme += complet[i].v;
+    if (i >= n) somme -= complet[i - n].v;
+    if (i >= n - 1) res.set(complet[i].t, somme / n);
+  }
+  return res;
 }
 
 // ---------- Portefeuille ----------
@@ -192,16 +224,15 @@ export function seriePortefeuille(donnees, positions, periode, devise) {
     return { points, base, intraday: true };
   }
 
-  const jours = periode === '1A' ? 365 : 30;
   const quot = valeursQuotidiennes(donnees, positions, devise);
   const dates = [...quot.keys()];
   if (!dates.length) return { erreur: 'Pas d’historique' };
-  const debut = isoDate(msDate(dates[dates.length - 1]) - jours * JOUR);
-  const points = dates.filter((d) => d >= debut).map((d) => ({ t: msDate(d), v: quot.get(d).total }));
+  const complet = dates.map((d) => ({ t: msDate(d), v: quot.get(d).total }));
+  const points = tranche(complet, dates, dates[dates.length - 1], periode);
   const live = valeurActuelle(donnees, positions, devise);
-  if (live && live.session > dates[dates.length - 1]) points.push({ t: msDate(live.session), v: live.total });
-  else if (live && points.length) points[points.length - 1] = { t: points[points.length - 1].t, v: live.total };
-  return { points, base: points[0]?.v, intraday: false };
+  if (live && live.session > dates[dates.length - 1]) points.push({ t: msDate(live.session), v: live.total, live: true });
+  else if (live && points.length) points[points.length - 1] = { t: points[points.length - 1].t, v: live.total, live: true };
+  return { points, base: points[0]?.v, intraday: false, complet };
 }
 
 /**
@@ -225,9 +256,11 @@ export function valeursQuotidiennes(donnees, positions, devise) {
     let total = 0;
     for (const p of ok) {
       const q = donnees.symboles[p.symbole].quotidien;
-      const prix = valeurAvant(q, d);
+      // Titre pas encore en bourse ce jour-là (ex. SpaceX avant son IPO) : compté à son premier cours,
+      // pour que son arrivée ne ressemble pas à un gain. Le graphique le signale.
+      const prix = valeurAvant(q, d) ?? q[0]?.[1];
       if (prix == null) continue;
-      const prixVeille = precedent ? valeurAvant(q, precedent) : null;
+      const prixVeille = precedent ? (valeurAvant(q, precedent) ?? q[0]?.[1]) : null;
       const valeur = p.quantite * prix * taux;
       total += valeur;
       details.push({ symbole: p.symbole, quantite: p.quantite, prix, valeur, varPct: prixVeille ? (prix / prixVeille - 1) * 100 : null });
@@ -257,6 +290,20 @@ export function valeurActuelle(donnees, positions, devise) {
     details.push({ symbole: p.symbole, quantite: p.quantite, prix: s.dernier, valeur, varPct: s.precedent ? (s.dernier / s.precedent - 1) * 100 : null });
   }
   return { total, veille, variation: total - veille, variationPct: veille ? (total / veille - 1) * 100 : null, session, details };
+}
+
+/**
+ * Contribution de chaque titre à la variation du jour (dans la devise d'affichage), triée de la plus forte hausse
+ * à la plus forte baisse, et poids de chaque titre dans le portefeuille.
+ */
+export function contributions(donnees, positions, devise) {
+  const a = valeurActuelle(donnees, positions, devise);
+  if (!a) return null;
+  const lignes = a.details.map((d) => {
+    const avant = d.varPct != null ? d.valeur / (1 + d.varPct / 100) : d.valeur;
+    return { symbole: d.symbole, valeur: d.valeur, poids: a.total ? d.valeur / a.total : 0, variation: d.valeur - avant, varPct: d.varPct };
+  });
+  return { total: a.total, variation: a.variation, lignes };
 }
 
 /** Part du portefeuille par pays / secteur (sert aux suggestions d'indices). */

@@ -57,6 +57,7 @@
 <nav class="jump" aria-label="Sections">
   <a href="#portefeuille">Portefeuille</a>
   <a href="#calendrier-sec">Calendrier</a>
+  <a href="#recherche">Rechercher</a>
   <a href="#actions">Actions</a>
   <a href="#metaux">Métaux</a>
   <a href="#taiwan">Chine–Taïwan</a>
@@ -73,6 +74,16 @@
     <div class="gr-grand" data-graph="portefeuille"></div>
     <p class="small" data-maj-prix></p>
   </article>
+  <div class="grid">
+    <article class="card">
+      <h3>Répartition par titre</h3>
+      <div id="repartition" class="chargement" style="min-height:12rem"></div>
+    </article>
+    <article class="card">
+      <h3>Qui a fait bouger le portefeuille aujourd’hui</h3>
+      <div id="contribution" class="chargement" style="min-height:12rem"></div>
+    </article>
+  </div>
 </section>
 
 <section id="calendrier-sec">
@@ -81,9 +92,39 @@
   <article class="card" id="calendrier"></article>
 </section>
 
+<section id="recherche">
+  <h2>Rechercher une action</h2>
+  <p class="intro">N’importe quel titre, ici ou ailleurs : tape un nom (« Apple », « Banque Royale ») ou un symbole (« AAPL », « RY.TO », « TSX:SHOP »).</p>
+  <article class="card">
+    <form id="rech-form" class="rech-form" role="search" autocomplete="off">
+      <label for="rech-champ" class="sr">Nom ou symbole de l’action</label>
+      <input id="rech-champ" type="search" list="rech-suggestions" placeholder="Nom ou symbole…" enterkeyhint="search" autocapitalize="characters" spellcheck="false">
+      <datalist id="rech-suggestions"></datalist>
+      <button type="submit" class="btn btn-plein">Rechercher</button>
+    </form>
+    <p id="rech-erreur" class="small baisse" hidden></p>
+    <div id="rech-recentes" hidden><p class="gr-menu-titre">Recherches récentes</p><div class="gr-menu-cases"></div></div>
+    <div id="rech-resultat" class="rech-resultat" hidden>
+      <div class="head"><h3 data-rech-titre></h3><button type="button" class="btn btn-petit" data-surveiller aria-pressed="false">+ Ajouter à ma liste</button></div>
+      <div class="rech-info" data-w="info"></div>
+      <div class="rech-graph" data-w="graph"></div>
+      <div class="grid">
+        <div class="rech-profil" data-w="profil"></div>
+        <div class="rech-finances" data-w="finances"></div>
+      </div>
+      <p class="small">Données en direct et profil fournis par TradingView. Dans le graphique, le symbole en haut à gauche permet aussi de chercher un autre titre et d’ajouter des indicateurs.</p>
+    </div>
+  </article>
+  <div id="surveillance" class="surveillance">
+    <h3>Ma liste de surveillance</h3>
+    <p class="small" data-vide>Aucun titre pour l’instant. Cherche une action, puis touche « Ajouter à ma liste ».</p>
+    <div class="grid"></div>
+  </div>
+</section>
+
 <section id="actions">
   <h2>Ses actions</h2>
-  <p class="intro">Prix par action en $ US, avec les périodes 1J, 1S, 1M et 1A et l’option Comparer. Sous chaque titre : ce qui l'a fait bouger cette semaine et quoi surveiller.</p>
+  <p class="intro">Prix par action en $ US. Choisis la période, active les outils (haut / bas, moyennes mobiles) ou compare avec un indice; ⤢ agrandit le graphique. Sous chaque titre : ce qui l'a fait bouger cette semaine et quoi surveiller.</p>
   <div class="grid">
 
     <article class="card">

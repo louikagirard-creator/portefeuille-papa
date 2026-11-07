@@ -274,3 +274,49 @@ input[type="color"] { width: 2.4rem; height: 2rem; border: 1px solid var(--line)
 footer { margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1rem; font-size: .8rem; color: var(--muted); }
 footer ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3rem; }
 .coeur { text-align: center; font-size: .9rem; color: var(--muted); margin: 2rem auto 0; padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+/* ---------- Outils des graphiques ---------- */
+.seg-defile { max-width: 100%; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+.seg-defile::-webkit-scrollbar { display: none; }
+.gr-outils { display: flex; flex-wrap: wrap; gap: .35rem; }
+.puce-btn { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 999px; padding: .25rem .65rem; font-size: .8rem; cursor: pointer; }
+.puce-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--fg); }
+.puce-btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-doux); color: var(--fg); font-weight: 600; }
+.puce-btn:disabled { opacity: .45; cursor: not-allowed; }
+.gr-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: .5rem .9rem; margin: 0; border-top: 1px solid var(--line); padding-top: .6rem; }
+.gr-stats div { min-width: 0; }
+.gr-stats dt { font-size: .7rem; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+.gr-stats dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; font-size: .92rem; display: flex; flex-direction: column; }
+.gr-stats dd small { font-weight: 400; color: var(--muted); font-size: .72rem; }
+.card.plein-ecran { position: fixed; inset: 0; z-index: 30; border-radius: 0; overflow-y: auto;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+.card.plein-ecran .gr-zone { height: min(65vh, 40rem); }
+body.sans-defilement { overflow: hidden; }
+
+/* ---------- Répartition et contribution ---------- */
+.rep { display: grid; grid-template-columns: minmax(9rem, 12rem) 1fr; gap: 1rem; align-items: center; }
+@media (max-width: 480px) { .rep { grid-template-columns: 1fr; } }
+.rep-anneau { position: relative; height: 12rem; }
+.rep-centre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; text-align: center; }
+.rep-centre strong { font-variant-numeric: tabular-nums; font-size: 1rem; }
+.rep-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .3rem; font-size: .86rem; }
+.rep-liste li { display: grid; grid-template-columns: .7rem 1fr auto auto; gap: .5rem; align-items: center; font-variant-numeric: tabular-nums; }
+.rep-pastille { width: .7rem; height: .7rem; border-radius: 3px; }
+.rep-poids { color: var(--muted); }
+.rep-val { text-align: right; min-width: 5.5rem; }
+.contrib-total { font-size: .9rem; color: var(--muted); }
+.contrib-total strong { font-variant-numeric: tabular-nums; }
+
+/* ---------- Recherche ---------- */
+.rech-form { display: flex; gap: .5rem; }
+.rech-form input { flex: 1; min-width: 0; font: inherit; font-size: 1rem; padding: .6rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--fg); }
+.rech-form input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-doux); }
+.btn-plein { background: var(--accent); color: var(--sur-accent); border-color: var(--accent); font-weight: 600; padding: .55rem 1.1rem; font-size: .92rem; }
+.rech-resultat { display: flex; flex-direction: column; gap: .8rem; border-top: 1px solid var(--line); padding-top: .8rem; }
+.rech-info { min-height: 9rem; color-scheme: light; }
+.rech-graph { height: 26rem; color-scheme: light; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.rech-profil, .rech-finances { height: 26rem; color-scheme: light; min-width: 0; }
+@media (max-width: 640px) { .rech-graph { height: 22rem; } .rech-profil, .rech-finances { height: 22rem; } }
+.surveillance { display: flex; flex-direction: column; gap: .7rem; margin-top: .4rem; }
+.surv-actions { display: flex; gap: .4rem; align-items: center; }
+.surv-actions .btn-icone { width: 2rem; height: 2rem; font-size: 1rem; }

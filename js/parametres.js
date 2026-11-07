@@ -1,6 +1,6 @@
 // Paramètres : lecture/sauvegarde (localStorage), application en direct (variables CSS sur <html>)
 // et panneau latéral « Paramètres ». Chaque changement émet l'événement « mg:parametres ».
-import { DEFAUTS, THEMES, POLICES, TAILLES, PERIODES, INDICES, TITRES, POSITIONS_EXEMPLE } from './config.js';
+import { DEFAUTS, THEMES, POLICES, TAILLES, PERIODES, INDICES, TITRES, POSITIONS_EXEMPLE, OUTILS } from './config.js';
 
 const CLE = 'mg-parametres';
 let etat = charger();
@@ -27,12 +27,14 @@ export function modifier(changements) {
   etat = { ...etat, ...changements };
   try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch { /* navigation privée : on garde en mémoire */ }
   appliquer();
-  window.dispatchEvent(new CustomEvent('mg:parametres', { detail: changements }));
+  // La liste de surveillance et les recherches récentes ne changent rien aux graphiques : pas de redessin.
+  const listes = Object.keys(changements).length && Object.keys(changements).every((k) => k === 'surveillance' || k === 'recherchesRecentes');
+  if (!listes) window.dispatchEvent(new CustomEvent('mg:parametres', { detail: changements }));
 }
 
 export function reinitialiser() {
   const positions = etat.positionsExemple ? POSITIONS_EXEMPLE : etat.positions; // on ne perd jamais les vraies positions
-  etat = { ...structuredClone(DEFAUTS), positions, positionsExemple: etat.positionsExemple };
+  etat = { ...structuredClone(DEFAUTS), positions, positionsExemple: etat.positionsExemple, surveillance: etat.surveillance, recherchesRecentes: etat.recherchesRecentes };
   modifier({});
 }
 
@@ -145,6 +147,10 @@ function contenu() {
       segments('epaisseur', 'Épaisseur de la ligne', { 1: 'Fine', 2: 'Normale', 3: 'Épaisse' }, etat.epaisseur, (v) => modifier({ epaisseur: +v })),
       interrupteur('pr-grille', 'Afficher la grille', etat.grille, m('grille')),
       segments('periode', 'Période par défaut', Object.fromEntries(PERIODES.map((p) => [p, p])), etat.periode, m('periode')),
+      h('fieldset', { class: 'pr-champ' }, h('legend', {}, 'Outils affichés par défaut'),
+        h('div', { class: 'pr-cases' }, Object.entries(OUTILS).map(([k, o]) => h('label', { class: 'pr-inline' },
+          h('input', { type: 'checkbox', checked: !!etat.outils?.[k], onchange: (e) => modifier({ outils: { ...etat.outils, [k]: e.target.checked } }) }),
+          h('span', {}, o.nom + (o.quotidien ? ' (à partir de 1M)' : '')))))),
       h('fieldset', { class: 'pr-champ' }, h('legend', {}, 'Indices de comparaison favoris'),
         h('div', { class: 'pr-cases' }, INDICES.map((ix) => h('label', { class: 'pr-inline' },
           h('input', { type: 'checkbox', checked: etat.indicesFavoris.includes(ix.id),
@@ -155,7 +161,7 @@ function contenu() {
       segments('format', 'Format des nombres', { fr: '1 234,56 $', en: '$1,234.56' }, etat.formatNombre, m('formatNombre'))),
     h('div', { class: 'pr-bas' },
       h('button', { type: 'button', class: 'btn', onclick: () => { reinitialiser(); ouvrir(true); } }, 'Réinitialiser'),
-      h('p', { class: 'pr-note' }, 'Les préférences sont gardées sur cet appareil. Réinitialiser garde tes positions.'))
+      h('p', { class: 'pr-note' }, 'Les préférences sont gardées sur cet appareil. Réinitialiser garde tes positions et ta liste de surveillance.'))
   ];
 }
 

@@ -59,7 +59,15 @@ export const POLICES = {
 
 export const TAILLES = { petit: 14, normal: 16, grand: 18, tresgrand: 20 };
 
-export const PERIODES = ['1J', '1S', '1M', '1A'];
+export const PERIODES = ['1J', '1S', '1M', '3M', '6M', 'AAJ', '1A', '2A'];
+
+// Outils des graphiques (valeurs par défaut, modifiables dans Paramètres et sur chaque graphique).
+export const OUTILS = {
+  hautBas: { nom: 'Haut / bas', defaut: true },
+  depart: { nom: 'Niveau de départ', defaut: true },
+  mm20: { nom: 'Moyenne 20 j', defaut: false, quotidien: true },
+  mm50: { nom: 'Moyenne 50 j', defaut: false, quotidien: true }
+};
 
 export const DEFAUTS = {
   prenom: 'Michel',
@@ -76,6 +84,9 @@ export const DEFAUTS = {
   grille: true,
   periode: '1M',
   indicesFavoris: ['EWC', 'SPY'],
+  outils: { hautBas: true, depart: true, mm20: false, mm50: false },
+  surveillance: [],              // liste de surveillance (recherche) : [{ nom, symbole }]
+  recherchesRecentes: [],
   devise: 'CAD',               // devise d'affichage du portefeuille
   formatNombre: 'fr',          // 'fr' = 1 234,56 $ ; 'en' = $1,234.56
   positions: POSITIONS_EXEMPLE,
