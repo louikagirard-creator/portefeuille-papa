@@ -115,7 +115,9 @@ async function main() {
   // 2) Quotidien sur ~2 ans (sert à 1M, 1A et au calendrier).
   let quotidien;
   const memeJour = ancien?.quotidienDate === dateNY();
-  if (!FORCER_QUOTIDIEN && memeJour && ancien?.symboles) {
+  // Réutilise l'historique seulement s'il contient déjà tous les symboles demandés (sinon, liste changée).
+  const complet = ancien?.symboles && SYMBOLES.every((x) => ancien.symboles[x]?.quotidien?.length);
+  if (!FORCER_QUOTIDIEN && memeJour && complet) {
     quotidien = Object.fromEntries(SYMBOLES.map((s) => [s, ancien.symboles[s]?.quotidien ? { valeurs: ancien.symboles[s].quotidien } : { erreur: ancien.symboles[s]?.erreur || 'Absent' }]));
     console.log('Historique quotidien réutilisé');
   } else {
@@ -161,7 +163,7 @@ async function main() {
     etat: nbOk ? 'ok' : (limite ? 'limite' : 'erreur'),
     message: nbOk ? null : (Object.values(intra)[0]?.erreur || 'Aucune donnée'),
     genere: new Date().toISOString(),
-    quotidienDate: memeJour && !FORCER_QUOTIDIEN ? ancien.quotidienDate : dateNY(),
+    quotidienDate: memeJour && !FORCER_QUOTIDIEN && complet ? ancien.quotidienDate : dateNY(),
     source: 'Twelve Data',
     symboles
   };
