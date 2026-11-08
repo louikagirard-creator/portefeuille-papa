@@ -371,3 +371,22 @@ body.sans-defilement { overflow: hidden; }
 .card.plein-ecran ~ .ia-bouton, body.sans-defilement .ia-bouton { display: none; }
 .coeur { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
 .ia-cle { max-width: none; align-self: stretch; display: flex; flex-direction: column; gap: .5rem; } .ia-cle ol { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: .3rem; } .ia-cle input { flex: 1; min-width: 0; font: inherit; padding: .55rem .75rem; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--fg); } .ia-cle a { color: var(--accent); font-weight: 600; }
+
+/* ---------- Mes positions (éditeur) et gains ---------- */
+.pr-pos-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .6rem; }
+.pr-pos { border: 1px solid var(--line); border-radius: 10px; padding: .55rem .65rem; display: flex; flex-direction: column; gap: .45rem; }
+.pr-pos-tete { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; }
+.pr-pos-tete .tick { font-size: .68rem; }
+.pr-pos-champs { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.pr-pos-champs label { display: flex; flex-direction: column; gap: .2rem; font-size: .74rem; color: var(--muted); min-width: 0; }
+.pr-pos-champs input, .pr-ajout input { width: 100%; min-width: 0; font: inherit; font-size: 1rem; padding: .4rem .55rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+.pr-badge { display: inline-block; margin-top: .2rem; font-size: .72rem; padding: .05rem .45rem; border-radius: 999px; background: var(--accent-doux); color: var(--fg); }
+.pr-ajout { display: flex; flex-direction: column; gap: .3rem; margin-top: .7rem; font-size: .9rem; }
+.pr-ajout-ligne { display: flex; gap: .4rem; }
+.pr-ajout-ligne input { flex: 1; }
+.pr-note.alerte p { margin-bottom: .4rem; }
+.gains-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.gains-liste li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto 4.2rem; gap: .6rem; align-items: baseline; padding: .35rem 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.gains-liste li:last-child { border-bottom: 0; }
+.gains-pct { text-align: right; }
+@media (max-width: 480px) { .gains-liste li { grid-template-columns: minmax(0, 1fr) auto 4rem; } .gains-liste li .small { display: none; } }

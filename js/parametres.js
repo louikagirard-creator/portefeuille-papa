@@ -1,10 +1,13 @@
 // Paramètres : lecture/sauvegarde (localStorage), application en direct (variables CSS sur <html>)
 // et panneau latéral « Paramètres ». Chaque changement émet l'événement « mg:parametres ».
 import { cleGemini, enregistrerCleGemini } from './ia.js';
-import { DEFAUTS, THEMES, POLICES, TAILLES, PERIODES, INDICES, TITRES, POSITIONS_EXEMPLE, OUTILS } from './config.js';
+import { DEFAUTS, THEMES, POLICES, TAILLES, PERIODES, INDICES, TITRES, POSITIONS_EXEMPLE, OUTILS, ajouterTitres, trouverTitre } from './config.js';
+import { chargerPrix } from './donnees.js';
+import { SUGGESTIONS, versSymbole } from './recherche.js';
 
 const CLE = 'mg-parametres';
 let etat = charger();
+ajouterTitres(etat.titresPerso); // les titres ajoutés par Michel existent dès le départ
 
 function charger() {
   try {
@@ -35,7 +38,7 @@ export function modifier(changements) {
 
 export function reinitialiser() {
   const positions = etat.positionsExemple ? POSITIONS_EXEMPLE : etat.positions; // on ne perd jamais les vraies positions
-  etat = { ...structuredClone(DEFAUTS), positions, positionsExemple: etat.positionsExemple, surveillance: etat.surveillance, recherchesRecentes: etat.recherchesRecentes };
+  etat = { ...structuredClone(DEFAUTS), positions, positionsExemple: etat.positionsExemple, surveillance: etat.surveillance, recherchesRecentes: etat.recherchesRecentes, titresPerso: etat.titresPerso };
   modifier({});
 }
 
@@ -98,30 +101,98 @@ function texte(id, label, valeur, placeholder, onChange) {
     h('input', { type: 'text', id, value: valeur || '', placeholder: placeholder || '', oninput: (e) => onChange(e.target.value) }));
 }
 
-function editeurPositions() {
+/**
+ * Ajoute un titre au portefeuille (quantité 0, à remplir) à partir d'un choix de recherche { nom, symbole }.
+ * Un titre déjà connu (ex. « Google ») réutilise sa fiche; sinon une fiche perso est créée.
+ * Renvoie l'identifiant du titre.
+ */
+export function ajouterAuPortefeuille(choix) {
+  let id = trouverTitre(choix.symbole);
+  let titresPerso = etat.titresPerso || [];
+  if (!id) {
+    id = choix.symbole.toUpperCase();
+    const fiche = { id, nom: choix.nom === choix.symbole ? id.split(':').pop() : choix.nom, tv: id };
+    titresPerso = [...titresPerso.filter((t) => t.id !== id), fiche];
+    ajouterTitres([fiche]);
+  }
+  const positions = etat.positions.some((p) => p.symbole === id) ? etat.positions : [...etat.positions, { symbole: id, quantite: 0 }];
+  modifier({ positions, titresPerso, positionsExemple: false });
+  return id;
+}
+
+/** Texte prêt à envoyer pour demander l'ajout de titres au suivi automatique (historique + total). */
+function demandeSuivi(titres) {
+  return 'Salut ! Peux-tu ajouter au suivi automatique de mon site de portefeuille : '
+    + titres.map((t) => `${t.nom} (${t.tv})`).join(', ') + ' ? Merci !';
+}
+
+async function partager(texte, bouton) {
+  try {
+    if (navigator.share) { await navigator.share({ text: texte }); return; }
+    await navigator.clipboard.writeText(texte);
+    bouton.textContent = '✓ Message copié : colle-le dans un texto';
+  } catch { /* partage annulé */ }
+}
+
+function editeurPositions(focusId) {
   const box = h('div', { class: 'pr-positions' });
-  const dessiner = () => {
-    box.replaceChildren(
+  let suivis = null; // symboles présents dans les données (null = pas encore chargé)
+  chargerPrix().then((d) => { suivis = new Set(Object.keys(d.symboles || {}).filter((k) => !d.symboles[k].erreur)); dessiner(); });
+
+  const dessiner = (focus) => {
+    const enAttente = etat.positions.filter((p) => suivis && !suivis.has(p.symbole)).map((p) => TITRES[p.symbole] || { nom: p.symbole, tv: p.symbole });
+    const champ = h('input', { type: 'search', id: 'pr-ajout', list: 'pr-ajout-liste', placeholder: 'Ex. Apple, Banque Royale, AAPL, RY.TO', autocomplete: 'off', spellcheck: 'false', enterkeyhint: 'done' });
+    const erreur = h('p', { class: 'small baisse', hidden: true });
+    const ajouter = (e) => {
+      e.preventDefault();
+      const t = champ.value.trim();
+      const connu = Object.entries(TITRES).find(([, x]) => x.nom.toLowerCase() === t.toLowerCase());
+      const choix = connu ? { nom: connu[1].nom, symbole: connu[0] } : versSymbole(t);
+      if (!choix) { erreur.textContent = 'Titre introuvable. Essaie le nom (« Apple ») ou le symbole (« AAPL », « RY.TO »).'; erreur.hidden = false; return; }
+      dessiner(ajouterAuPortefeuille(choix));
+    };
+    const noms = new Set([...Object.values(TITRES).map((t) => t.nom), ...SUGGESTIONS.map(([n]) => n)]);
+
+    box.replaceChildren(...[
       etat.positionsExemple ? h('p', { class: 'pr-note alerte' }, 'Ce sont des quantités d’exemple. Entre les vraies pour que les montants soient exacts.') : null,
-      h('table', {},
-        h('thead', {}, h('tr', {}, h('th', {}, 'Titre'), h('th', {}, 'Quantité'), h('th', {}, h('span', { class: 'sr' }, 'Retirer')))),
-        h('tbody', {}, etat.positions.map((p, i) => h('tr', {},
-          h('td', {}, h('select', { 'aria-label': 'Titre', onchange: (e) => maj(i, { symbole: e.target.value }) },
-            Object.entries(TITRES).map(([s, t]) => h('option', { value: s, selected: s === p.symbole }, t.nom)))),
-          h('td', {}, h('input', { type: 'number', min: '0', step: 'any', inputmode: 'decimal', value: p.quantite, 'aria-label': 'Quantité (' + (TITRES[p.symbole]?.unite || 'actions') + ')',
-            onchange: (e) => maj(i, { quantite: Math.max(0, parseFloat(e.target.value) || 0) }) })),
-          h('td', {}, h('button', { type: 'button', class: 'btn-icone', 'aria-label': 'Retirer ' + (TITRES[p.symbole]?.nom || p.symbole), onclick: () => retirer(i) }, '×'))
-        )))),
+      h('ul', { class: 'pr-pos-liste' }, etat.positions.map((p, i) => {
+        const t = TITRES[p.symbole] || { nom: p.symbole, tv: p.symbole, unite: 'actions' };
+        const statut = !suivis ? null : suivis.has(p.symbole)
+          ? null : h('span', { class: 'pr-badge', title: 'Prix en direct affiché; pas encore compté dans le total ni le calendrier' }, '⏳ pas encore dans le total');
+        return h('li', { class: 'pr-pos' },
+          h('div', { class: 'pr-pos-tete' },
+            h('div', {}, h('strong', {}, t.nom), ' ', h('span', { class: 'tick' }, t.tv), statut ? [h('br'), statut] : null),
+            h('button', { type: 'button', class: 'btn-icone', 'aria-label': 'Retirer ' + t.nom, onclick: () => retirer(i) }, '×')),
+          h('div', { class: 'pr-pos-champs' },
+            h('label', {}, h('span', {}, 'Quantité (' + (t.unite || 'actions') + ')'),
+              h('input', { type: 'number', min: '0', step: 'any', inputmode: 'decimal', value: p.quantite || '', placeholder: '0', 'data-pos': p.symbole,
+                onchange: (e) => maj(i, { quantite: Math.max(0, parseFloat(e.target.value) || 0) }) })),
+            h('label', {}, h('span', {}, 'Prix moyen payé ($ US)'),
+              h('input', { type: 'number', min: '0', step: 'any', inputmode: 'decimal', value: p.prixAchat || '', placeholder: 'facultatif',
+                onchange: (e) => maj(i, { prixAchat: Math.max(0, parseFloat(e.target.value) || 0) || undefined }) }))));
+      })),
+      h('form', { class: 'pr-ajout', onsubmit: ajouter },
+        h('label', { for: 'pr-ajout' }, 'Ajouter une action, un fonds ou un métal'),
+        h('div', { class: 'pr-ajout-ligne' }, champ, h('button', { type: 'submit', class: 'btn actif' }, 'Ajouter')),
+        h('datalist', { id: 'pr-ajout-liste' }, [...noms].map((n) => h('option', { value: n }))),
+        erreur),
+      enAttente.length ? h('div', { class: 'pr-note alerte' },
+        h('p', {}, `⏳ ${enAttente.map((t) => t.nom).join(', ')} : le prix en direct est affiché, mais pour l’historique, le calendrier et le total, le titre doit être ajouté au suivi automatique (une fois).`),
+        h('button', { type: 'button', class: 'btn btn-petit', onclick: (e) => partager(demandeSuivi(enAttente), e.currentTarget) }, 'Envoyer la demande d’ajout')) : null,
       h('div', { class: 'pr-actions' },
-        h('button', { type: 'button', class: 'btn', onclick: ajouter }, 'Ajouter un titre'),
         etat.positionsExemple ? h('button', { type: 'button', class: 'btn', onclick: () => { modifier({ positionsExemple: false }); dessiner(); } }, 'Ce sont mes vraies quantités') : null),
-      h('p', { class: 'pr-note' }, 'Actions et parts : nombre détenu. Métaux : onces. Sandisk se divise 8 pour 1 le 19 novembre 2026 : multiplie alors ta quantité par 8.')
-    );
+      h('p', { class: 'pr-note' }, 'Actions et parts : nombre détenu. Métaux : onces. Le prix moyen payé sert à calculer tes gains depuis l’achat. Sandisk se divise 8 pour 1 le 19 novembre 2026 : multiplie alors ta quantité par 8 et divise ton prix payé par 8.')
+    ].filter(Boolean));
+    const cible = focus && box.querySelector(`input[data-pos="${CSS.escape(focus)}"]`);
+    if (cible) requestAnimationFrame(() => { cible.scrollIntoView({ block: 'center' }); cible.focus(); });
   };
-  const maj = (i, ch) => { const pos = etat.positions.map((p, j) => (j === i ? { ...p, ...ch } : p)); modifier({ positions: pos, positionsExemple: false }); dessiner(); };
-  const retirer = (i) => { modifier({ positions: etat.positions.filter((_, j) => j !== i), positionsExemple: false }); dessiner(); };
-  const ajouter = () => { const libre = Object.keys(TITRES).find((s) => !etat.positions.some((p) => p.symbole === s)) || 'GOOGL'; modifier({ positions: [...etat.positions, { symbole: libre, quantite: 0 }] }); dessiner(); };
-  dessiner();
+  const maj = (i, ch) => { const pos = etat.positions.map((p, j) => (j === i ? { ...p, ...ch } : p)); modifier({ positions: pos, positionsExemple: false }); };
+  const retirer = (i) => {
+    const id = etat.positions[i].symbole;
+    modifier({ positions: etat.positions.filter((_, j) => j !== i), titresPerso: (etat.titresPerso || []).filter((t) => t.id !== id), positionsExemple: false });
+    dessiner();
+  };
+  dessiner(focusId);
   return box;
 }
 
@@ -144,6 +215,8 @@ function reglagesIA() {
   return box;
 }
 
+let focusPosition = null;
+
 function contenu() {
   const m = (k) => (v) => { modifier({ [k]: v }); };
   return [
@@ -151,7 +224,7 @@ function contenu() {
       texte('pr-prenom', 'Prénom dans le message d’accueil', etat.prenom, 'Michel', m('prenom')),
       texte('pr-nom', 'Nom affiché dans le titre', etat.nomComplet, 'Michel Girard', m('nomComplet')),
       texte('pr-accueil', 'Message d’accueil personnalisé', etat.accueilPerso, 'Laisser vide pour « Bonjour / Bon après-midi / Bonsoir »', m('accueilPerso'))),
-    h('section', {}, h('h3', {}, 'Mes positions'), editeurPositions()),
+    h('section', { id: 'pr-positions' }, h('h3', {}, 'Mes positions'), editeurPositions(focusPosition)),
     h('section', {}, h('h3', {}, 'Apparence'),
       choix('pr-theme', 'Thème', Object.fromEntries(Object.entries(THEMES).map(([k, t]) => [k, t.nom])), etat.theme, m('theme')),
       h('div', { class: 'pr-champ pr-inline' },
@@ -182,7 +255,7 @@ function contenu() {
       segments('format', 'Format des nombres', { fr: '1 234,56 $', en: '$1,234.56' }, etat.formatNombre, m('formatNombre'))),
     h('div', { class: 'pr-bas' },
       h('button', { type: 'button', class: 'btn', onclick: () => { reinitialiser(); ouvrir(true); } }, 'Réinitialiser'),
-      h('p', { class: 'pr-note' }, 'Les préférences sont gardées sur cet appareil. Réinitialiser garde tes positions et ta liste de surveillance.'))
+      h('p', { class: 'pr-note' }, 'Les préférences sont gardées sur cet appareil. Réinitialiser garde tes positions, tes titres ajoutés et ta liste de surveillance.'))
   ];
 }
 
@@ -194,7 +267,8 @@ function couleurAccentActuelle() {
 let panneau, voile, declencheur;
 
 /** Ouvre le panneau (ou le redessine s'il est déjà ouvert). */
-export function ouvrir(redessiner = false) {
+export function ouvrir(redessiner = false, positionAFocus = null) {
+  focusPosition = positionAFocus;
   if (!panneau) {
     voile = h('div', { class: 'pr-voile', hidden: true, onclick: fermer });
     panneau = h('aside', { class: 'pr-panneau', id: 'parametres', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'pr-titre', hidden: true });

@@ -1,12 +1,13 @@
 # Met à jour les prix (data/prix.json) et publie le site sur GitHub Pages.
-# - toutes les 15 minutes pendant les heures de bourse (lundi au vendredi);
+# - toutes les 20 minutes pendant les heures de bourse (lundi au vendredi), pour laisser de la place
+#   aux titres ajoutés dans suivis.json sans dépasser 800 crédits par jour chez Twelve Data;
 # - une fois après la fermeture, avec l'historique quotidien complet;
 # - à chaque modification poussée sur main, et à la main (onglet Actions).
 name: Données et publication
 
 on:
   schedule:
-    - cron: '*/15 13-21 * * 1-5'
+    - cron: '*/20 13-21 * * 1-5'
     - cron: '30 22 * * 1-5'
   push:
     branches: [main]

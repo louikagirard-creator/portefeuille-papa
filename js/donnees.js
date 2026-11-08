@@ -2,7 +2,7 @@
 // séries par période, valeur du portefeuille dans le temps, valeurs quotidiennes pour le calendrier.
 // Les données sont chargées une seule fois par visite (cache en mémoire) et une copie de secours
 // est gardée sur l'appareil pour les moments où la source est indisponible.
-import { TAUX_USDCAD } from './config.js';
+import { TAUX_USDCAD, TITRES, ajouterTitres } from './config.js';
 
 const CLE_SECOURS = 'mg-prix-secours';
 const JOUR = 86400000;
@@ -73,6 +73,7 @@ const estContinu = (s) => s.includes('/'); // métaux et devises : marché presq
 // ---------- Préparation ----------
 
 function preparer(d, avis) {
+  ajouterTitres(d.titres); // titres suivis par le robot (suivis.json)
   const symboles = {};
   for (const [s, e] of Object.entries(d.symboles || {})) {
     if (e.erreur) { symboles[s] = { erreur: e.erreur }; continue; }
@@ -101,7 +102,7 @@ function preparer(d, avis) {
  */
 export function serieSymbole(donnees, sym, periode) {
   const s = donnees.symboles[sym];
-  if (!s) return { erreur: 'Symbole introuvable dans les données' };
+  if (!s) return { erreur: TITRES[sym]?.perso ? 'prix en direct seulement, pas encore dans le suivi automatique' : 'Symbole introuvable dans les données' };
   if (s.erreur) return { erreur: s.erreur };
 
   if (periode === '1J') {
@@ -179,7 +180,7 @@ export function positionsValides(donnees, positions) {
   for (const p of positions) {
     if (!(p.quantite > 0)) continue;
     const s = donnees.symboles[p.symbole];
-    if (s && !s.erreur) ok.push(p); else erreurs.push({ ...p, erreur: s?.erreur || 'Symbole introuvable' });
+    if (s && !s.erreur) ok.push(p); else erreurs.push({ ...p, erreur: s?.erreur || 'Symbole introuvable', enAttente: !s && !!TITRES[p.symbole]?.perso });
   }
   return { ok, erreurs };
 }

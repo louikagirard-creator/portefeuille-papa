@@ -6,6 +6,8 @@ import { Calendrier } from './calendrier.js';
 import { dessinerRepartition } from './repartition.js';
 import { initialiserRecherche } from './recherche.js';
 import { initialiserIA } from './ia.js';
+import { dessinerTitresPerso } from './titres-perso.js';
+import { dessinerGains } from './gains.js';
 import { chargerPrix } from './donnees.js';
 import { dateHeure } from './format.js';
 
@@ -13,17 +15,19 @@ appliquer();
 document.querySelectorAll('[data-ouvrir-parametres]').forEach((b) => b.addEventListener('click', () => ouvrir()));
 
 dessinerAccueil();
+dessinerTitresPerso(); // avant les graphiques : les cartes ajoutées en ont un aussi
 initialiserGraphiques();
 const cal = document.getElementById('calendrier');
 if (cal) new Calendrier(cal);
 dessinerRepartition();
+dessinerGains();
 initialiserRecherche();
 initialiserIA();
 
 // Heure de la dernière mise à jour des prix, au pied de la section portefeuille.
 chargerPrix().then((d) => {
   document.querySelectorAll('[data-maj-prix]').forEach((el) => {
-    el.textContent = d.etat === 'ok' ? `Prix mis à jour ${dateHeure(d.genere)} (aux 15 minutes pendant la bourse).` : '';
+    el.textContent = d.etat === 'ok' ? `Prix mis à jour ${dateHeure(d.genere)} (aux 20 minutes pendant la bourse).` : '';
   });
 });
 

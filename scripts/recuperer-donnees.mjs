@@ -16,13 +16,21 @@ const FORCER_QUOTIDIEN = process.env.FORCER_QUOTIDIEN === '1';
 const SORTIE = 'data/prix.json';
 const API = 'https://api.twelvedata.com/time_series';
 
-// Symboles demandés à Twelve Data (titres + indices + taux de change).
-const SYMBOLES = [
+// Symboles de base demandés à Twelve Data (titres + indices + taux de change).
+const BASE = [
   'SPCX', 'GOOGL', 'SU', 'CVE', 'SNDK', 'WDC', 'EWT',
   'XAU/USD', 'SLV', 'PPLT', 'PALL',
   'SPY', 'QQQ', 'DIA', 'EWC',
   'USD/CAD'
 ];
+
+// Titres ajoutés au suivi (suivis.json, à la racine du dépôt). Chaque entrée :
+//   { "id": "NASDAQ:AAPL", "twelve": "AAPL", "nom": "Apple", "alias": ["AAPL"] }
+// id = symbole TradingView utilisé par le site; twelve = symbole demandé à Twelve Data
+// (titre canadien : sa cotation américaine, ex. TSX:RY → RY). Maximum MAX_SUIVIS pour rester sous 800 crédits/jour.
+const MAX_SUIVIS = 6;
+let SUIVIS = [];
+let SYMBOLES = BASE;
 
 // L'argent, le platine et le palladium au comptant ne sont pas offerts dans le plan gratuit.
 // On les estime à partir des fonds qui détiennent le métal physique (SLV, PPLT, PALL) :
@@ -91,8 +99,19 @@ async function precedent() {
   try { return JSON.parse(await readFile(SORTIE, 'utf8')); } catch { return null; }
 }
 
+async function lireSuivis() {
+  try {
+    const liste = JSON.parse(await readFile('suivis.json', 'utf8')).titres || [];
+    const valides = liste.filter((t) => t && t.id && t.twelve);
+    if (valides.length > MAX_SUIVIS) console.log(`suivis.json : ${valides.length} titres, seuls les ${MAX_SUIVIS} premiers sont suivis (limite du plan gratuit).`);
+    return valides.slice(0, MAX_SUIVIS);
+  } catch { return []; }
+}
+
 async function main() {
   await mkdir('data', { recursive: true });
+  SUIVIS = await lireSuivis();
+  SYMBOLES = [...new Set([...BASE, ...SUIVIS.map((t) => t.twelve)])];
   const ancien = await precedent();
 
   if (!CLE) {
@@ -158,6 +177,11 @@ async function main() {
     };
   }
 
+  // Titres suivis : copiés sous l'identifiant du site (et ses alias).
+  for (const t of SUIVIS) {
+    for (const cle of [t.id, ...(t.alias || [])]) if (cle !== t.twelve && symboles[t.twelve]) symboles[cle] = symboles[t.twelve];
+  }
+
   const limite = Object.values(intra).some((r) => r.erreur === 'Limite d’appels atteinte');
   const sortie = {
     etat: nbOk ? 'ok' : (limite ? 'limite' : 'erreur'),
@@ -165,6 +189,7 @@ async function main() {
     genere: new Date().toISOString(),
     quotidienDate: memeJour && !FORCER_QUOTIDIEN && complet ? ancien.quotidienDate : dateNY(),
     source: 'Twelve Data',
+    titres: SUIVIS.map(({ id, nom, court, tv, pays, secteur, unite }) => ({ id, nom, court, tv: tv || id, pays, secteur, unite })),
     symboles
   };
   await writeFile(SORTIE, JSON.stringify(sortie));

@@ -1,0 +1,4 @@
+{
+  "_aide": "Titres ajoutés au suivi automatique (historique, calendrier, total). Max 6. id = symbole TradingView affiché sur le site; twelve = symbole Twelve Data (titre canadien : sa cotation américaine). Exemple : { \"id\": \"NASDAQ:AAPL\", \"twelve\": \"AAPL\", \"nom\": \"Apple\", \"alias\": [\"AAPL\"] }",
+  "titres": []
+}

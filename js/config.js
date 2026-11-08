@@ -17,6 +17,31 @@ export const TITRES = {
   'XPD/USD': { nom: 'Palladium', court: 'Palladium', pays: 'MONDE', secteur: 'metaux', unite: 'onces', tv: 'OANDA:XPDUSD' }
 };
 
+/**
+ * Ajoute des titres « perso » (ajoutés par Michel ou suivis par le robot via suivis.json) à TITRES.
+ * Un titre déjà présent n'est jamais écrasé. Identifiant = symbole TradingView (ex. « NASDAQ:AAPL », « TSX:RY »).
+ */
+export function ajouterTitres(liste) {
+  for (const t of liste || []) {
+    if (!t?.id || TITRES[t.id]) continue;
+    const bourse = (t.tv || t.id).split(':')[0];
+    TITRES[t.id] = {
+      nom: t.nom || t.id, court: t.court || (t.nom || t.id).replace(/\s*\(.*\)$/, ''),
+      pays: t.pays || (/^TSXV?$/.test(bourse) ? 'CA' : 'US'), secteur: t.secteur || 'autre',
+      unite: t.unite || 'actions', tv: t.tv || t.id, perso: true
+    };
+  }
+}
+
+/** Trouve un titre déjà connu à partir d'un symbole (« GOOGL », « NASDAQ:GOOGL », « TSX:SU »…). */
+export function trouverTitre(symbole) {
+  const s = String(symbole || '').toUpperCase();
+  const court = s.includes(':') ? s.split(':')[1] : s;
+  if (TITRES[s]) return s;
+  const e = Object.entries(TITRES).find(([id, t]) => t.tv.toUpperCase() === s || id.toUpperCase() === court || (!s.includes(':') && t.tv.toUpperCase().split(':')[1] === court));
+  return e ? e[0] : null;
+}
+
 // Indices de comparaison, suivis par des fonds négociés en bourse qui les reproduisent.
 export const INDICES = [
   { id: 'EWC', nom: 'S&P/TSX (Canada)', via: 'fonds EWC', theme: 'canada' },
@@ -87,6 +112,7 @@ export const DEFAUTS = {
   outils: { hautBas: true, depart: true, mm20: false, mm50: false },
   surveillance: [],              // liste de surveillance (recherche) : [{ nom, symbole }]
   recherchesRecentes: [],
+  titresPerso: [],               // titres ajoutés par Michel : [{ id, nom, tv }]
   devise: 'CAD',               // devise d'affichage du portefeuille
   formatNombre: 'fr',          // 'fr' = 1 234,56 $ ; 'en' = $1,234.56
   positions: POSITIONS_EXEMPLE,

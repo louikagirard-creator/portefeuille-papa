@@ -1,10 +1,10 @@
 // Recherche d'actions : n'importe quel titre (États-Unis, TSX, etc.) avec prix en direct, graphique complet,
 // profil de l'entreprise et données financières, par les widgets TradingView (aucune clé API dans le navigateur).
 // Liste de surveillance et recherches récentes gardées sur l'appareil (paramètres).
-import { parametres, modifier, estSombre } from './parametres.js';
+import { parametres, modifier, estSombre, ajouterAuPortefeuille, ouvrir } from './parametres.js';
 
 // Suggestions : noms courants → symbole TradingView. On peut aussi taper n'importe quel symbole (ex. « AAPL », « TSX:RY »).
-const SUGGESTIONS = [
+export const SUGGESTIONS = [
   ['Apple', 'NASDAQ:AAPL'], ['Microsoft', 'NASDAQ:MSFT'], ['Nvidia', 'NASDAQ:NVDA'], ['Amazon', 'NASDAQ:AMZN'],
   ['Alphabet (Google)', 'NASDAQ:GOOGL'], ['Meta (Facebook)', 'NASDAQ:META'], ['Tesla', 'NASDAQ:TSLA'], ['Netflix', 'NASDAQ:NFLX'],
   ['Broadcom', 'NASDAQ:AVGO'], ['AMD', 'NASDAQ:AMD'], ['Intel', 'NASDAQ:INTC'], ['Micron', 'NASDAQ:MU'],
@@ -27,7 +27,7 @@ const SUGGESTIONS = [
 const sans = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /** Transforme ce que Michel tape en symbole TradingView. */
-function versSymbole(texte) {
+export function versSymbole(texte) {
   const t = texte.trim();
   if (!t) return null;
   const exact = SUGGESTIONS.find(([nom, sym]) => sans(nom) === sans(t) || sym.toLowerCase() === t.toLowerCase() || sym.split(':')[1].toLowerCase() === t.toLowerCase());
@@ -85,7 +85,7 @@ function majBoutonSurveillance() {
   const b = document.querySelector('[data-surveiller]');
   if (!b || !courant) return;
   const dedans = (parametres().surveillance || []).some((x) => x.symbole === courant.symbole);
-  b.textContent = dedans ? '✓ Dans ma liste' : '+ Ajouter à ma liste';
+  b.textContent = dedans ? '★ Surveillé' : '☆ Surveiller';
   b.setAttribute('aria-pressed', String(dedans));
 }
 
@@ -150,6 +150,11 @@ export function initialiserRecherche() {
     modifier({ surveillance: dedans ? l.filter((x) => x.symbole !== courant.symbole) : [...l, courant] });
     majBoutonSurveillance();
     dessinerSurveillance();
+  });
+  // Ajoute le titre à « Mes positions » et ouvre Paramètres sur sa quantité.
+  document.querySelector('[data-rech-ajout]')?.addEventListener('click', () => {
+    if (!courant) return;
+    ouvrir(false, ajouterAuPortefeuille(courant));
   });
   document.querySelector('[data-rech-ia]')?.addEventListener('click', () => {
     if (!courant) return;

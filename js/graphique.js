@@ -84,6 +84,7 @@ export class Graphique {
     this.id = 'gr' + (++compteur);
     this.construire();
     window.addEventListener('mg:parametres', (e) => {
+      if (!this.el.isConnected) return; // carte retirée de la page (titre perso supprimé)
       if ('periode' in e.detail) { this.periode = parametres().periode; this.majBoutons(); }
       if ('outils' in e.detail) { this.outils = { ...parametres().outils }; this.majBoutons(); }
       if ('indicesFavoris' in e.detail && !this.comparer) this.indices = new Set(parametres().indicesFavoris);
@@ -365,7 +366,9 @@ export class Graphique {
     if (this.symbole && donnees.symboles[this.symbole]?.estime) notes.push(`Prix à l’once estimé à partir du fonds ${donnees.symboles[this.symbole].estime} (le prix au comptant n’est pas offert gratuitement).`);
     if (!this.symbole) {
       const { erreurs } = positionsValides(donnees, p.positions);
-      if (erreurs.length) notes.push('Non inclus dans le total faute de données : ' + erreurs.map((x) => TITRES[x.symbole]?.nom || x.symbole).join(', ') + '.');
+      const attente = erreurs.filter((x) => x.enAttente), autres = erreurs.filter((x) => !x.enAttente);
+      if (attente.length) notes.push('Pas encore dans le total (en attente du suivi automatique) : ' + attente.map((x) => TITRES[x.symbole]?.nom || x.symbole).join(', ') + '.');
+      if (autres.length) notes.push('Non inclus dans le total faute de données : ' + autres.map((x) => TITRES[x.symbole]?.nom || x.symbole).join(', ') + '.');
       if (quotidien) {
         const debutPeriode = isoDate(pts[0].t);
         for (const pos of positionsValides(donnees, p.positions).ok) {
@@ -401,10 +404,15 @@ export class Graphique {
   }
 }
 
+/** Crée le graphique d'un élément [data-graph] (une seule fois par élément). */
+export function creerGraphique(el) {
+  if (el.dataset.pret) return;
+  el.dataset.pret = '1';
+  const symbole = el.dataset.graph === 'portefeuille' ? null : el.dataset.graph;
+  new Graphique(el, { symbole, nom: symbole ? (TITRES[symbole]?.nom || symbole) : 'Portefeuille', repliTV: symbole ? TITRES[symbole]?.tv : null });
+}
+
 /** Crée un graphique dans chaque élément [data-graph] de la page. */
 export function initialiserGraphiques() {
-  document.querySelectorAll('[data-graph]').forEach((el) => {
-    const symbole = el.dataset.graph === 'portefeuille' ? null : el.dataset.graph;
-    new Graphique(el, { symbole, nom: symbole ? (TITRES[symbole]?.nom || symbole) : 'Portefeuille', repliTV: symbole ? TITRES[symbole]?.tv : null });
-  });
+  document.querySelectorAll('[data-graph]').forEach(creerGraphique);
 }
