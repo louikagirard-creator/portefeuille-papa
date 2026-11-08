@@ -151,6 +151,10 @@ export function initialiserRecherche() {
     majBoutonSurveillance();
     dessinerSurveillance();
   });
+  document.querySelector('[data-rech-ia]')?.addEventListener('click', () => {
+    if (!courant) return;
+    window.dispatchEvent(new CustomEvent('mg:demander-ia', { detail: { question: `Présente-moi ${courant.nom} (${courant.symbole}) en quelques points : ce que fait l’entreprise, ses forces, ses risques, et en quoi elle complèterait ou recouperait mon portefeuille.` } }));
+  });
   dessinerRecentes();
   dessinerSurveillance();
 

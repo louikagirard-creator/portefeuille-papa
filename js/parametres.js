@@ -1,5 +1,6 @@
 // Paramètres : lecture/sauvegarde (localStorage), application en direct (variables CSS sur <html>)
 // et panneau latéral « Paramètres ». Chaque changement émet l'événement « mg:parametres ».
+import { cleGemini, enregistrerCleGemini } from './ia.js';
 import { DEFAUTS, THEMES, POLICES, TAILLES, PERIODES, INDICES, TITRES, POSITIONS_EXEMPLE, OUTILS } from './config.js';
 
 const CLE = 'mg-parametres';
@@ -124,6 +125,25 @@ function editeurPositions() {
   return box;
 }
 
+/** Clé Gemini gratuite. Gardée à part, seulement sur l'appareil, et jamais réaffichée. */
+function reglagesIA() {
+  const box = h('div', { class: 'pr-cases' });
+  const dessiner = () => {
+    const cle = cleGemini();
+    const champCle = h('input', { type: 'password', id: 'pr-cle-gemini', autocomplete: 'off', spellcheck: 'false', placeholder: cle ? '•••••••• (déjà enregistrée)' : 'Colle ta clé ici' });
+    box.replaceChildren(h('div', { class: 'pr-champ' },
+      h('label', { for: 'pr-cle-gemini' }, 'Clé Google Gemini (gratuite)'),
+      champCle,
+      h('div', { class: 'pr-actions' },
+        h('button', { type: 'button', class: 'btn', onclick: () => { if (champCle.value.trim()) { enregistrerCleGemini(champCle.value); dessiner(); } } }, cle ? 'Remplacer' : 'Enregistrer'),
+        cle ? h('button', { type: 'button', class: 'btn', onclick: () => { enregistrerCleGemini(''); dessiner(); } }, 'Effacer la clé') : null),
+      h('p', { class: 'pr-note', 'aria-live': 'polite' }, cle ? '✓ Une clé est enregistrée sur cet appareil.' : 'Aucune clé : l’assistant IA est désactivé.'),
+      h('p', { class: 'pr-note' }, 'Clé gratuite sur aistudio.google.com/apikey (compte Google, bouton « Create API key »). Elle reste seulement sur cet appareil.')));
+  };
+  dessiner();
+  return box;
+}
+
 function contenu() {
   const m = (k) => (v) => { modifier({ [k]: v }); };
   return [
@@ -156,6 +176,7 @@ function contenu() {
           h('input', { type: 'checkbox', checked: etat.indicesFavoris.includes(ix.id),
             onchange: (e) => modifier({ indicesFavoris: e.target.checked ? [...etat.indicesFavoris, ix.id] : etat.indicesFavoris.filter((x) => x !== ix.id) }) }),
           h('span', {}, ix.nom)))))),
+    h('section', {}, h('h3', {}, 'Assistant IA'), reglagesIA()),
     h('section', {}, h('h3', {}, 'Nombres et devise'),
       segments('devise', 'Devise du portefeuille', { CAD: 'Dollar canadien', USD: 'Dollar américain' }, etat.devise, m('devise')),
       segments('format', 'Format des nombres', { fr: '1 234,56 $', en: '$1,234.56' }, etat.formatNombre, m('formatNombre'))),

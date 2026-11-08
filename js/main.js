@@ -5,6 +5,7 @@ import { initialiserGraphiques } from './graphique.js';
 import { Calendrier } from './calendrier.js';
 import { dessinerRepartition } from './repartition.js';
 import { initialiserRecherche } from './recherche.js';
+import { initialiserIA } from './ia.js';
 import { chargerPrix } from './donnees.js';
 import { dateHeure } from './format.js';
 
@@ -17,6 +18,7 @@ const cal = document.getElementById('calendrier');
 if (cal) new Calendrier(cal);
 dessinerRepartition();
 initialiserRecherche();
+initialiserIA();
 
 // Heure de la dernière mise à jour des prix, au pied de la section portefeuille.
 chargerPrix().then((d) => {

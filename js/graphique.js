@@ -110,6 +110,7 @@ export class Graphique {
       <div class="gr-outils" role="group" aria-label="Outils du graphique">
         ${Object.entries(OUTILS).map(([k, o]) => `<button type="button" class="puce-btn" data-outil="${k}">${o.nom}</button>`).join('')}
         <button type="button" class="puce-btn btn-comp" aria-expanded="false" aria-controls="${this.id}-menu">Comparer</button>
+        <button type="button" class="puce-btn btn-ia" title="Demander à l’IA d’expliquer ce graphique">✨ Expliquer</button>
       </div>
       <div class="gr-menu" id="${this.id}-menu" hidden></div>
       <div class="gr-zone"><canvas role="img" aria-label="Graphique de ${this.nom}"></canvas><div class="gr-etat" hidden></div></div>
@@ -124,6 +125,12 @@ export class Graphique {
     }));
     this.$('.btn-comp').addEventListener('click', () => this.basculerComparaison());
     this.$('.gr-agrandir').addEventListener('click', () => this.basculerPleinEcran());
+    // L'assistant IA (js/ia.js) explique le mouvement affiché, sur la période choisie.
+    this.$('.btn-ia').addEventListener('click', () => {
+      if (this.el.classList.contains('plein-ecran')) this.basculerPleinEcran();
+      const sujet = this.symbole ? `de ${this.nom}` : 'de mon portefeuille';
+      window.dispatchEvent(new CustomEvent('mg:demander-ia', { detail: { question: `Explique-moi le mouvement ${sujet} sur ${NOM_PERIODE[this.periode]} : qu’est-ce qui l’explique, et comment ça se compare aux indices ?` } }));
+    });
     this.majBoutons();
   }
 
