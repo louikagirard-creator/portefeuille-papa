@@ -463,3 +463,34 @@ body.sans-defilement { overflow: hidden; }
 .rev-chiffre strong { font-family: var(--titre, Georgia, serif); font-size: 1.45rem; font-variant-numeric: tabular-nums; }
 .rev-prochains { margin-top: .3rem; }
 @media print { .alertes { display: none !important; } }
+
+/* ---------- Invitation à installer ---------- */
+.installer { display: flex; align-items: center; gap: .5rem; margin-top: .8rem; padding: .55rem .55rem .55rem .85rem; border-radius: 10px; background: var(--accent-doux); font-size: .9rem; }
+.installer > span { flex: 1; min-width: 0; }
+.installer .btn-icone { width: 1.9rem; height: 1.9rem; font-size: 1rem; }
+@media print { .installer { display: none !important; } }
+
+/* ---------- Planifier : rééquilibrage et projection ---------- */
+#planification .card + .card { margin-top: 1rem; }
+.rb-tete, .rb-ligne { display: grid; grid-template-columns: minmax(0, 1.2fr) 3.4rem 5.4rem minmax(0, 1.6fr); gap: .5rem; align-items: center; }
+.rb-tete { color: var(--muted); padding: 0 0 .2rem; border-bottom: 1px solid var(--line); }
+.rb-liste { list-style: none; margin: 0; padding: 0; }
+.rb-ligne { padding: .45rem 0; border-bottom: 1px solid var(--line); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.rb-nom { display: flex; flex-direction: column; min-width: 0; }
+.rb-nom small, .rb-op small { color: var(--muted); font-size: .72rem; }
+.rb-cible { display: flex; align-items: center; gap: .2rem; }
+.rb-cible input { width: 3.9rem; font: inherit; font-size: .95rem; padding: .3rem .35rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
+.rb-op { display: flex; flex-direction: column; min-width: 0; }
+.rb-impot { display: block; }
+@media (max-width: 480px) {
+  .rb-tete { display: none; }
+  .rb-ligne { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "nom actuel cible" "op op op"; row-gap: .25rem; }
+  .rb-nom { grid-area: nom; } .rb-actuel { grid-area: actuel; } .rb-cible { grid-area: cible; } .rb-op { grid-area: op; }
+  .rb-actuel::before { content: 'actuel '; color: var(--muted); font-size: .72rem; }
+}
+.pj-reglages { display: flex; flex-direction: column; gap: .7rem; }
+.pj-champ { display: flex; flex-direction: column; gap: .3rem; border: 0; padding: 0; margin: 0; font-size: .9rem; }
+.pj-champ legend { padding: 0; margin-bottom: .3rem; }
+.pj-champ input { max-width: 14rem; font: inherit; font-size: 1.05rem; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+.pj-champ small { color: var(--muted); }
+@media print { #planification .sc-choix, .rb-cible input { border: 0; } }

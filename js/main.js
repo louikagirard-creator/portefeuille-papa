@@ -11,6 +11,8 @@ import { dessinerGains } from './gains.js';
 import { dessinerRisque } from './risque.js';
 import { dessinerRevenu } from './revenu.js';
 import { dessinerAlertes } from './alertes.js';
+import { dessinerReequilibrage } from './reequilibrage.js';
+import { dessinerProjection } from './projection.js';
 import { dessinerScenarios } from './scenarios.js';
 import { chargerPrix } from './donnees.js';
 import { dateHeure } from './format.js';
@@ -28,6 +30,8 @@ dessinerGains();
 dessinerRisque();
 dessinerRevenu();
 dessinerAlertes();
+dessinerReequilibrage();
+dessinerProjection();
 dessinerScenarios();
 
 // Mode discret : masque tous les montants (pratique pour montrer l'écran à quelqu'un).
@@ -61,3 +65,38 @@ chargerPrix().then((d) => {
 window.addEventListener('mg:parametres', (e) => {
   if ('theme' in e.detail || 'accent' in e.detail || 'gainsPertes' in e.detail || 'police' in e.detail) window.MG_redessinerFixes?.();
 });
+
+// ---------- Application installable (écran d'accueil) et hors ligne ----------
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { /* sans gravité */ });
+
+(function invitationInstaller() {
+  const box = document.getElementById('installer');
+  const installe = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  let refuse = false;
+  try { refuse = localStorage.getItem('mg-installer-ferme') === '1'; } catch { /* navigation privée */ }
+  if (!box || installe || refuse) return;
+  const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const mobile = iOS || /Android/.test(navigator.userAgent);
+  let invite = null; // Android / Chrome : invitation d'installation native
+  const afficher = () => {
+    box.replaceChildren();
+    const t = document.createElement('span');
+    t.textContent = iOS
+      ? '📱 Mets le portefeuille sur ton écran d’accueil : touche le bouton Partager (carré avec une flèche ⬆️), puis « Sur l’écran d’accueil ». Il s’ouvrira comme une application, même sans Internet.'
+      : '📱 Installe le portefeuille comme une application : il s’ouvrira d’un seul toucher, même sans Internet.';
+    box.append(t);
+    if (invite) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-petit actif'; b.textContent = 'Installer';
+      b.addEventListener('click', async () => { invite.prompt(); await invite.userChoice.catch(() => null); box.hidden = true; });
+      box.append(b);
+    }
+    const x = document.createElement('button');
+    x.type = 'button'; x.className = 'btn-icone'; x.textContent = '×'; x.setAttribute('aria-label', 'Ne plus afficher');
+    x.addEventListener('click', () => { box.hidden = true; try { localStorage.setItem('mg-installer-ferme', '1'); } catch { /* */ } });
+    box.append(x);
+    box.hidden = false;
+  };
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); invite = e; afficher(); });
+  if (iOS || (mobile && !('onbeforeinstallprompt' in window))) afficher();
+})();

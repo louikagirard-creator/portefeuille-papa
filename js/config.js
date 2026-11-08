@@ -121,6 +121,8 @@ export const DEFAUTS = {
   surveillance: [],              // liste de surveillance (recherche) : [{ nom, symbole }]
   recherchesRecentes: [],
   discret: false,
+  cibles: null,                 // rééquilibrage : { symbole: % cible } (null = poids actuels)
+  projection: { retrait: null, horizon: 25, rendement: 5, inflation: 2.5 },
   alerteSeuil: 5,               // alerte si un titre bouge de plus de X % dans la journée               // mode discret : montants masqués
   titresPerso: [],               // titres ajoutés par Michel : [{ id, nom, tv }]
   devise: 'CAD',               // devise d'affichage du portefeuille

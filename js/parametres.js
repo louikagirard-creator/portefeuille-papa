@@ -203,6 +203,45 @@ function editeurPositions(focusId) {
   return box;
 }
 
+/**
+ * Sauvegarde : tes positions et préférences sont gardées seulement sur cet appareil.
+ * On peut en télécharger une copie (fichier) et la restaurer sur un autre appareil ou après un changement de téléphone.
+ * La clé de l'IA n'est jamais incluse.
+ */
+function sauvegarde() {
+  const message = h('p', { class: 'pr-note', 'aria-live': 'polite' });
+  const telecharger = () => {
+    const contenu = JSON.stringify({ type: 'portefeuille-mg', version: 1, date: new Date().toISOString(), parametres: etat }, null, 2);
+    const url = URL.createObjectURL(new Blob([contenu], { type: 'application/json' }));
+    const a = h('a', { href: url, download: `portefeuille-sauvegarde-${new Date().toISOString().slice(0, 10)}.json` });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    message.textContent = '✓ Fichier téléchargé. Garde-le en lieu sûr (il contient tes quantités).';
+  };
+  const fichier = h('input', { type: 'file', accept: 'application/json,.json', class: 'sr', id: 'pr-restaurer', onchange: async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try {
+      const d = JSON.parse(await f.text());
+      const p = d?.type === 'portefeuille-mg' ? d.parametres : null;
+      if (!p || !Array.isArray(p.positions) || !p.positions.every((x) => typeof x?.symbole === 'string' && Number.isFinite(+x.quantite)))
+        throw new Error('format');
+      if (!confirm(`Remplacer tes positions et préférences actuelles par celles du ${new Date(d.date).toLocaleDateString('fr-CA')} (${p.positions.length} titres) ?`)) return;
+      ajouterTitres(p.titresPerso);
+      etat = { ...structuredClone(DEFAUTS), ...p };
+      modifier({ positions: etat.positions });
+      ouvrir(true);
+    } catch { message.textContent = 'Ce fichier n’est pas une sauvegarde du portefeuille.'; }
+    e.target.value = '';
+  } });
+  return h('div', { class: 'pr-cases' },
+    h('p', { class: 'pr-note' }, 'Tes positions sont gardées seulement sur cet appareil (rien n’est envoyé sur Internet). Fais une copie pour ne rien perdre si tu changes de téléphone.'),
+    h('div', { class: 'pr-actions' },
+      h('button', { type: 'button', class: 'btn', onclick: telecharger }, 'Télécharger une copie'),
+      h('label', { class: 'btn', for: 'pr-restaurer', tabindex: '0', onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fichier.click(); } } }, 'Restaurer une copie'), fichier),
+    message);
+}
+
 /** Clé Gemini gratuite. Gardée à part, seulement sur l'appareil, et jamais réaffichée. */
 function reglagesIA() {
   const box = h('div', { class: 'pr-cases' });
@@ -257,6 +296,7 @@ function contenu() {
             onchange: (e) => modifier({ indicesFavoris: e.target.checked ? [...etat.indicesFavoris, ix.id] : etat.indicesFavoris.filter((x) => x !== ix.id) }) }),
           h('span', {}, ix.nom)))))),
     h('section', {}, h('h3', {}, 'Assistant IA'), reglagesIA()),
+    h('section', {}, h('h3', {}, 'Sauvegarde'), sauvegarde()),
     h('section', {}, h('h3', {}, 'Nombres et devise'),
       segments('devise', 'Devise du portefeuille', { CAD: 'Dollar canadien', USD: 'Dollar américain' }, etat.devise, m('devise')),
       segments('format', 'Format des nombres', { fr: '1 234,56 $', en: '$1,234.56' }, etat.formatNombre, m('formatNombre'))),
