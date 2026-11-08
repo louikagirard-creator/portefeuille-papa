@@ -38,6 +38,8 @@ jobs:
           TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
           FORCER_QUOTIDIEN: ${{ github.event.schedule == '30 22 * * 1-5' && '1' || '0' }}
         run: node scripts/recuperer-donnees.mjs
+      - name: Versionner les fichiers (évite les anciens fichiers en cache)
+        run: node scripts/versionner.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -3,7 +3,7 @@
 // et on garde une copie pour les moments sans connexion. Les widgets TradingView et les appels d'IA
 // ne sont jamais mis en cache.
 const CACHE = 'mg-v1';
-const ESSENTIEL = ['./', 'index.html', 'css/style.css', 'data.js', 'app.js', 'js/main.js', 'manifest.webmanifest', 'icone-192.png'];
+const ESSENTIEL = ['./', 'index.html', 'manifest.webmanifest', 'icone-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ESSENTIEL)).then(() => self.skipWaiting()));
@@ -27,7 +27,7 @@ self.addEventListener('fetch', (e) => {
       if (rep.ok) { const copie = rep.clone(); caches.open(CACHE).then((c) => c.put(req, copie)); }
       return rep;
     } catch {
-      const enCache = await caches.match(req, { ignoreSearch: url.pathname.endsWith('prix.json') || url.pathname.endsWith('evenements.json') });
+      const enCache = await caches.match(req) || await caches.match(req, { ignoreSearch: true });
       if (enCache) return enCache;
       if (req.mode === 'navigate') return caches.match('index.html');
       throw new Error('Hors ligne');
