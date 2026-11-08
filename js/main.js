@@ -9,6 +9,8 @@ import { initialiserIA } from './ia.js';
 import { dessinerTitresPerso } from './titres-perso.js';
 import { dessinerGains } from './gains.js';
 import { dessinerRisque } from './risque.js';
+import { dessinerRevenu } from './revenu.js';
+import { dessinerAlertes } from './alertes.js';
 import { dessinerScenarios } from './scenarios.js';
 import { chargerPrix } from './donnees.js';
 import { dateHeure } from './format.js';
@@ -24,6 +26,8 @@ if (cal) new Calendrier(cal);
 dessinerRepartition();
 dessinerGains();
 dessinerRisque();
+dessinerRevenu();
+dessinerAlertes();
 dessinerScenarios();
 
 // Mode discret : masque tous les montants (pratique pour montrer l'écran à quelqu'un).

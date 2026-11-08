@@ -99,6 +99,50 @@ async function precedent() {
   try { return JSON.parse(await readFile(SORTIE, 'utf8')); } catch { return null; }
 }
 
+// ---------- Dividendes (API publique de Nasdaq, une fois par jour) ----------
+// Couvre les actions cotées aux États-Unis (Google, Western Digital, titres ajoutés…). Les titres canadiens
+// et les fonds viennent de evenements.json (tenu à jour chaque samedi). Aucune clé nécessaire.
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36';
+const SANS_DIVIDENDE = new Set(['SLV', 'PPLT', 'PALL', 'SPY', 'QQQ', 'DIA', 'EWC', 'EWT', 'SU', 'CVE']);
+const dateUS = (s) => { const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s || ''); return m ? `${m[3]}-${m[1]}-${m[2]}` : null; };
+
+async function dividendeNasdaq(ticker) {
+  try {
+    const rep = await fetch(`https://api.nasdaq.com/api/quote/${encodeURIComponent(ticker)}/dividends?assetclass=stocks`, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+    if (!rep.ok) return null;
+    const lignes = (await rep.json())?.data?.dividends?.rows || [];
+    const versements = lignes.map((r) => ({ ex: dateUS(r.exOrEffDate), registre: dateUS(r.recordDate), paiement: dateUS(r.paymentDate), montant: parseFloat(String(r.amount).replace(/[$,]/g, '')), devise: r.currency || 'USD' }))
+      .filter((v) => v.ex && Number.isFinite(v.montant)).sort((a, b) => (a.ex < b.ex ? 1 : -1));
+    if (!versements.length) return null;
+    const dernier = versements[0];
+    // Fréquence : nombre de versements sur les 12 mois précédant le dernier (1, 2, 4 ou 12).
+    const ilYaUnAn = new Date(Date.parse(dernier.ex) - 360 * 86400_000).toISOString().slice(0, 10);
+    const n = versements.filter((v) => v.ex > ilYaUnAn).length;
+    const parAn = n >= 10 ? 12 : n >= 3 ? 4 : n === 2 ? 2 : 1;
+    if (dernier.ex < new Date(Date.now() - 400 * 86400_000).toISOString().slice(0, 10)) return null; // plus versé
+    const aujourdhui = dateNY();
+    return { montant: dernier.montant, devise: dernier.devise, parAn,
+      prochain: dernier.paiement && dernier.paiement >= aujourdhui ? { dateEx: dernier.ex, dateRegistre: dernier.registre, datePaiement: dernier.paiement } : null,
+      source: 'Nasdaq' };
+  } catch { return null; }
+}
+
+async function dividendes(symbolesTitres, ancien) {
+  let manuel = {};
+  try { manuel = JSON.parse(await readFile('evenements.json', 'utf8')).dividendes || {}; } catch { /* facultatif */ }
+  const res = {};
+  const memeJour = ancien?.dividendesDate === dateNY();
+  for (const s of symbolesTitres) {
+    if (manuel[s]) { res[s] = { ...manuel[s], source: manuel[s].source || 'evenements.json' }; continue; }
+    if (s.includes('/') || SANS_DIVIDENDE.has(s)) continue;
+    if (memeJour && ancien?.dividendes && s in ancien.dividendes) { if (ancien.dividendes[s]) res[s] = ancien.dividendes[s]; continue; }
+    const ticker = s.includes(':') ? (/^(NASDAQ|NYSE|AMEX)$/.test(s.split(':')[0]) ? s.split(':')[1] : null) : s;
+    const d = ticker ? await dividendeNasdaq(ticker) : null;
+    res[s] = d; // null = aucun dividende (gardé pour ne pas redemander le même jour)
+  }
+  return res;
+}
+
 async function lireSuivis() {
   try {
     const liste = JSON.parse(await readFile('suivis.json', 'utf8')).titres || [];
@@ -182,6 +226,10 @@ async function main() {
     for (const cle of [t.id, ...(t.alias || [])]) if (cle !== t.twelve && symboles[t.twelve]) symboles[cle] = symboles[t.twelve];
   }
 
+  // Dividendes des titres (pas des indices ni des fonds de métaux).
+  const titresDiv = [...new Set(['SPCX', 'GOOGL', 'SU', 'CVE', 'SNDK', 'WDC', 'EWT', ...SUIVIS.map((t) => t.id)])];
+  const divs = await dividendes(titresDiv, ancien);
+
   const limite = Object.values(intra).some((r) => r.erreur === 'Limite d’appels atteinte');
   const sortie = {
     etat: nbOk ? 'ok' : (limite ? 'limite' : 'erreur'),
@@ -189,6 +237,8 @@ async function main() {
     genere: new Date().toISOString(),
     quotidienDate: memeJour && !FORCER_QUOTIDIEN && complet ? ancien.quotidienDate : dateNY(),
     source: 'Twelve Data',
+    dividendes: divs,
+    dividendesDate: dateNY(),
     titres: SUIVIS.map(({ id, nom, court, tv, pays, secteur, unite }) => ({ id, nom, court, tv: tv || id, pays, secteur, unite })),
     symboles
   };

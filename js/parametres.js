@@ -1,7 +1,7 @@
 // Paramètres : lecture/sauvegarde (localStorage), application en direct (variables CSS sur <html>)
 // et panneau latéral « Paramètres ». Chaque changement émet l'événement « mg:parametres ».
 import { cleGemini, enregistrerCleGemini } from './ia.js';
-import { DEFAUTS, THEMES, POLICES, TAILLES, PERIODES, INDICES, TITRES, POSITIONS_EXEMPLE, OUTILS, ajouterTitres, trouverTitre } from './config.js';
+import { DEFAUTS, THEMES, POLICES, TAILLES, PERIODES, INDICES, TITRES, POSITIONS_EXEMPLE, OUTILS, COMPTES, ajouterTitres, trouverTitre } from './config.js';
 import { chargerPrix } from './donnees.js';
 import { SUGGESTIONS, versSymbole } from './recherche.js';
 
@@ -167,9 +167,16 @@ function editeurPositions(focusId) {
             h('label', {}, h('span', {}, 'Quantité (' + (t.unite || 'actions') + ')'),
               h('input', { type: 'number', min: '0', step: 'any', inputmode: 'decimal', value: p.quantite || '', placeholder: '0', 'data-pos': p.symbole,
                 onchange: (e) => maj(i, { quantite: Math.max(0, parseFloat(e.target.value) || 0) }) })),
-            h('label', {}, h('span', {}, 'Prix moyen payé ($ US)'),
+            h('label', {}, h('span', {}, 'Prix moyen payé (par unité)'),
               h('input', { type: 'number', min: '0', step: 'any', inputmode: 'decimal', value: p.prixAchat || '', placeholder: 'facultatif',
-                onchange: (e) => maj(i, { prixAchat: Math.max(0, parseFloat(e.target.value) || 0) || undefined }) }))));
+                onchange: (e) => maj(i, { prixAchat: Math.max(0, parseFloat(e.target.value) || 0) || undefined }) })),
+            h('label', {}, h('span', {}, 'Compte'),
+              h('select', { onchange: (e) => maj(i, { compte: e.target.value }) },
+                Object.entries(COMPTES).map(([k, n]) => h('option', { value: k, selected: k === (p.compte || 'non-enregistre') }, n)))),
+            h('label', {}, h('span', {}, 'Prix payé en'),
+              h('select', { onchange: (e) => maj(i, { deviseAchat: e.target.value }) },
+                h('option', { value: 'USD', selected: (p.deviseAchat || 'USD') === 'USD' }, '$ US'),
+                h('option', { value: 'CAD', selected: p.deviseAchat === 'CAD' }, '$ CA')))));
       })),
       h('form', { class: 'pr-ajout', onsubmit: ajouter },
         h('label', { for: 'pr-ajout' }, 'Ajouter une action, un fonds ou un métal'),
@@ -181,7 +188,7 @@ function editeurPositions(focusId) {
         h('button', { type: 'button', class: 'btn btn-petit', onclick: (e) => partager(demandeSuivi(enAttente), e.currentTarget) }, 'Envoyer la demande d’ajout')) : null,
       h('div', { class: 'pr-actions' },
         etat.positionsExemple ? h('button', { type: 'button', class: 'btn', onclick: () => { modifier({ positionsExemple: false }); dessiner(); } }, 'Ce sont mes vraies quantités') : null),
-      h('p', { class: 'pr-note' }, 'Actions et parts : nombre détenu. Métaux : onces. Le prix moyen payé sert à calculer tes gains depuis l’achat. Sandisk se divise 8 pour 1 le 19 novembre 2026 : multiplie alors ta quantité par 8 et divise ton prix payé par 8.')
+      h('p', { class: 'pr-note' }, 'Actions et parts : nombre détenu. Métaux : onces. Le prix moyen payé sert à calculer tes gains; entre-le en $ CA si ton relevé de courtier l’indique en $ CA (prix de base rajusté), c’est le plus exact pour l’impôt. Le compte sert à l’aperçu fiscal et aux dividendes. Sandisk se divise 8 pour 1 le 19 novembre 2026 : multiplie alors ta quantité par 8 et divise ton prix payé par 8.')
     ].filter(Boolean));
     const cible = focus && box.querySelector(`input[data-pos="${CSS.escape(focus)}"]`);
     if (cible) requestAnimationFrame(() => { cible.scrollIntoView({ block: 'center' }); cible.focus(); });
@@ -253,6 +260,9 @@ function contenu() {
     h('section', {}, h('h3', {}, 'Nombres et devise'),
       segments('devise', 'Devise du portefeuille', { CAD: 'Dollar canadien', USD: 'Dollar américain' }, etat.devise, m('devise')),
       segments('format', 'Format des nombres', { fr: '1 234,56 $', en: '$1,234.56' }, etat.formatNombre, m('formatNombre'))),
+    h('section', {}, h('h3', {}, 'Alertes'),
+      segments('alerte', 'M’avertir quand un titre bouge de plus de… dans la journée', { 3: '3 %', 5: '5 %', 8: '8 %', 10: '10 %', 0: 'Jamais' }, etat.alerteSeuil, (v) => modifier({ alerteSeuil: +v })),
+      h('p', { class: 'pr-note' }, 'Les alertes s’affichent en haut du site à l’ouverture : gros mouvements, dividendes et événements à venir.')),
     h('div', { class: 'pr-bas' },
       h('button', { type: 'button', class: 'btn', onclick: () => { reinitialiser(); ouvrir(true); } }, 'Réinitialiser'),
       h('p', { class: 'pr-note' }, 'Les préférences sont gardées sur cet appareil. Réinitialiser garde tes positions, tes titres ajoutés et ta liste de surveillance.'))

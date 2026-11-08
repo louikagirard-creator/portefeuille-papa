@@ -46,6 +46,21 @@ export function chargerPrix() {
   return promesse;
 }
 
+let promesseEvenements = null;
+/** Événements et dividendes tenus à la main (evenements.json), chargés une fois. */
+export function chargerEvenements() {
+  promesseEvenements ??= fetch('evenements.json?v=' + Math.floor(Date.now() / 3600000)).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+  return promesseEvenements;
+}
+
+/** Taux pour convertir un montant d'une devise (USD ou CAD) vers la devise d'affichage, au dernier cours. */
+export function tauxConversion(donnees, de, vers) {
+  if (de === vers) return 1;
+  const usdcad = donnees.symboles[TAUX_USDCAD]?.dernier;
+  if (!usdcad) return null;
+  return de === 'USD' ? usdcad : 1 / usdcad;
+}
+
 // ---------- Outils de date et de recherche ----------
 
 const fmtNY = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' });
@@ -88,7 +103,7 @@ function preparer(d, avis) {
     const dernier = derIntra && (!derQuot || dateBourse(derIntra[0]) >= derQuot[0]) ? derIntra[1] : derQuot?.[1];
     symboles[s] = { intraday, quotidien, session, precedent, dernier, tDernier: derIntra?.[0] ?? (derQuot ? msDate(derQuot[0]) : null), devise: e.devise || 'USD', avertissement: e.avertissement, estime: e.estime };
   }
-  return { etat: 'ok', avis, genere: new Date(d.genere), symboles };
+  return { etat: 'ok', avis, genere: new Date(d.genere), symboles, dividendes: d.dividendes || {} };
 }
 
 // ---------- Séries d'un symbole ----------

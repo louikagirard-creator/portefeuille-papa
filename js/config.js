@@ -54,6 +54,14 @@ export const INDICES = [
 
 export const TAUX_USDCAD = 'USD/CAD';
 
+// Types de comptes (fiscalité différente). « non-enregistre » est le défaut.
+export const COMPTES = {
+  'non-enregistre': 'Non enregistré',
+  reer: 'REER / FERR',
+  celi: 'CELI',
+  societe: 'Société de gestion'
+};
+
 // Quantités d'EXEMPLE : à remplacer par les vraies dans Paramètres > Mes positions.
 export const POSITIONS_EXEMPLE = [
   { symbole: 'SPCX', quantite: 100 }, { symbole: 'GOOGL', quantite: 50 },
@@ -112,7 +120,8 @@ export const DEFAUTS = {
   outils: { hautBas: true, depart: true, mm20: false, mm50: false },
   surveillance: [],              // liste de surveillance (recherche) : [{ nom, symbole }]
   recherchesRecentes: [],
-  discret: false,               // mode discret : montants masqués
+  discret: false,
+  alerteSeuil: 5,               // alerte si un titre bouge de plus de X % dans la journée               // mode discret : montants masqués
   titresPerso: [],               // titres ajoutés par Michel : [{ id, nom, tv }]
   devise: 'CAD',               // devise d'affichage du portefeuille
   formatNombre: 'fr',          // 'fr' = 1 234,56 $ ; 'en' = $1,234.56

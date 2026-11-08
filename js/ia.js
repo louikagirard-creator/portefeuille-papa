@@ -10,6 +10,9 @@ import { parametres } from './parametres.js';
 import { chargerPrix, serieSymbole, seriePortefeuille, valeurActuelle } from './donnees.js';
 import { TITRES, INDICES, TAUX_USDCAD } from './config.js';
 import { resumeRisque } from './risque.js';
+import { calculerRevenu } from './revenu.js';
+import { calculerGains } from './gains.js';
+import { COMPTES } from './config.js';
 
 export const CLE_GEMINI = 'mg-ia-cle-gemini';
 const CLE_CONVERSATION = 'mg-ia-conversation';
@@ -99,7 +102,15 @@ async function contexte() {
     if (fx && !fx.erreur) l.push(`\nDOLLAR : 1 $ US = ${r2(fx.dernier)} $ CA (1 mois ${r1(variationPeriode(serieSymbole(d, TAUX_USDCAD, '1M')))}).`);
   }
 
-  if (d.etat === 'ok') l.push('\n' + await resumeRisque());
+  if (d.etat === 'ok') {
+    l.push('\n' + await resumeRisque());
+    const rev = calculerRevenu(d, p);
+    if (rev?.lignes.length) l.push(`DIVIDENDES : revenu annuel estimé ${r2(rev.annuel)} ${p.devise} (rendement ${r1(rev.rendement * 100).replace('+', '')}); ` + rev.lignes.map((x) => `${TITRES[x.symbole]?.court || x.symbole} ${r2(x.annuel)}`).join(', ') + '.');
+    const g = calculerGains(d, p);
+    if (g?.lignes.length) l.push(`GAINS DEPUIS L'ACHAT : ${r2(g.gain)} ${p.devise} au total; ` + g.lignes.map((x) => `${TITRES[x.symbole]?.court || x.symbole} ${r1(x.gainPct)} (${COMPTES[x.compte]})`).join(', ') + '.');
+    const comptes = [...new Set(p.positions.map((x) => COMPTES[x.compte || 'non-enregistre']))];
+    l.push(`Comptes utilisés : ${comptes.join(', ')}.`);
+  }
 
   // Données relevées à la main (data.js)
   const D = window.DATA || {};

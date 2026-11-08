@@ -1,0 +1,12 @@
+{
+  "_aide": "Tenu à jour par la tâche du samedi. dividendes : pour les titres que l'API Nasdaq ne couvre pas (titres canadiens, fonds). montant = par versement, dans la devise indiquée; parAn = nombre de versements par année. evenements : dates à venir affichées dans les alertes.",
+  "miseAJour": "2026-11-07",
+  "dividendes": {
+    "SU":  { "montant": 0.66, "devise": "CAD", "parAn": 4, "prochain": { "dateRegistre": "2026-12-03", "datePaiement": "2026-12-24" }, "source": "Suncor, communiqué du 3 nov. 2026 (hausse de 10 %)" },
+    "CVE": { "montant": 0.22, "devise": "CAD", "parAn": 4, "prochain": { "dateRegistre": "2026-12-15", "datePaiement": "2026-12-31" }, "source": "Cenovus, communiqué du 3 nov. 2026" },
+    "EWT": { "montant": 2.82, "devise": "USD", "parAn": 1, "prochain": { "dateRegistre": "2026-12-16", "datePaiement": "2026-12-22" }, "approximatif": true, "source": "Distribution annuelle de décembre (montant de 2025, environ 2,6 % de rendement)" }
+  },
+  "evenements": [
+    { "date": "2026-11-19", "symbole": "SNDK", "texte": "Division de l’action Sandisk 8 pour 1 : multiplie la quantité par 8 et divise le prix payé par 8 dans ⚙️ Mes positions." }
+  ]
+}
