@@ -112,6 +112,7 @@ export const DEFAUTS = {
   outils: { hautBas: true, depart: true, mm20: false, mm50: false },
   surveillance: [],              // liste de surveillance (recherche) : [{ nom, symbole }]
   recherchesRecentes: [],
+  discret: false,               // mode discret : montants masqués
   titresPerso: [],               // titres ajoutés par Michel : [{ id, nom, tv }]
   devise: 'CAD',               // devise d'affichage du portefeuille
   formatNombre: 'fr',          // 'fr' = 1 234,56 $ ; 'en' = $1,234.56

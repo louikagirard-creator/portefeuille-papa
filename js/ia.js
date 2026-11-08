@@ -9,6 +9,7 @@
 import { parametres } from './parametres.js';
 import { chargerPrix, serieSymbole, seriePortefeuille, valeurActuelle } from './donnees.js';
 import { TITRES, INDICES, TAUX_USDCAD } from './config.js';
+import { resumeRisque } from './risque.js';
 
 export const CLE_GEMINI = 'mg-ia-cle-gemini';
 const CLE_CONVERSATION = 'mg-ia-conversation';
@@ -18,6 +19,7 @@ const URL_CLE = 'https://aistudio.google.com/apikey';
 const DELAI_MAX = 60000;
 
 const SUGGESTIONS = [
+  'Quels sont les plus gros risques de mon portefeuille ?',
   'Résume ma journée en bourse',
   'Quel titre a le plus aidé ou nui ce mois-ci ?',
   'Mon portefeuille fait-il mieux que le S&P 500 cette année ?',
@@ -96,6 +98,8 @@ async function contexte() {
     const fx = d.symboles[TAUX_USDCAD];
     if (fx && !fx.erreur) l.push(`\nDOLLAR : 1 $ US = ${r2(fx.dernier)} $ CA (1 mois ${r1(variationPeriode(serieSymbole(d, TAUX_USDCAD, '1M')))}).`);
   }
+
+  if (d.etat === 'ok') l.push('\n' + await resumeRisque());
 
   // Données relevées à la main (data.js)
   const D = window.DATA || {};

@@ -9,9 +9,14 @@ function nf(opts) {
   return cache.get(cle);
 }
 
+// Mode discret : les montants en dollars sont masqués (les pourcentages restent visibles).
+const masque = () => !!parametres().discret;
+const MASQUE = '•••••';
+
 /** Montant dans une devise : « 1 234,56 $ » ou « $1,234.56 ». Ajoute « US » ou « CA » pour lever l'ambiguïté. */
 export function argent(v, devise = 'CAD', decimales = 2) {
   if (v == null || !Number.isFinite(v)) return '—';
+  if (masque()) return MASQUE + (devise === 'USD' ? ' $ US' : ' $');
   const s = nf({ style: 'currency', currency: devise, currencyDisplay: 'narrowSymbol', minimumFractionDigits: decimales, maximumFractionDigits: decimales }).format(v);
   return devise === 'USD' ? s + ' US' : s;
 }
@@ -19,6 +24,7 @@ export function argent(v, devise = 'CAD', decimales = 2) {
 /** Montant compact pour le calendrier : « 123,4 k$ ». */
 export function argentCompact(v, devise = 'CAD') {
   if (v == null || !Number.isFinite(v)) return '—';
+  if (masque()) return '•• $';
   return nf({ style: 'currency', currency: devise, currencyDisplay: 'narrowSymbol', notation: 'compact', maximumFractionDigits: 1 }).format(v);
 }
 

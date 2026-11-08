@@ -44,10 +44,15 @@
     </div>
     <button type="button" class="btn-icone" data-ouvrir-parametres aria-label="Ouvrir les paramètres" title="Paramètres">⚙️</button>
   </div>
+  <p class="rapport-entete">Rapport de portefeuille · <span data-rapport-date></span></p>
   <div class="accueil">
     <p class="salut" data-salut>Bonjour Michel</p>
     <p class="resume" data-resume>&nbsp;</p>
     <div class="acc-total"><strong data-total>—</strong><span class="acc-var" data-total-var></span></div>
+    <div class="acc-outils">
+      <button type="button" class="btn btn-petit" data-discret aria-pressed="false">👁 Masquer les montants</button>
+      <button type="button" class="btn btn-petit" data-rapport>📄 Rapport PDF</button>
+    </div>
   </div>
   <p class="bandeau" data-exemple hidden><span>Les montants utilisent des <strong>quantités d’exemple</strong>. Entre tes vraies positions pour voir la vraie valeur.</span><button type="button" class="btn btn-petit" data-ouvrir-parametres>Mes positions</button></p>
   <p class="lede">Semaine du 2 au 6 novembre : grosse correction en techno (Taïwan, mémoire, Google), pétrole tenu en haut par la crise d'Ormuz, métaux précieux encore loin de leurs records de janvier.</p>
@@ -56,6 +61,8 @@
 
 <nav class="jump" aria-label="Sections">
   <a href="#portefeuille">Portefeuille</a>
+  <a href="#risque">Risque</a>
+  <a href="#scenarios">Scénarios</a>
   <a href="#calendrier-sec">Calendrier</a>
   <a href="#recherche">Rechercher</a>
   <a href="#actions">Actions</a>
@@ -89,6 +96,18 @@
       <div id="gains" class="chargement" style="min-height:6rem"></div>
     </article>
   </div>
+</section>
+
+<section id="risque">
+  <h2>Analyse de risque</h2>
+  <p class="intro">Ce qu’un gestionnaire privé regarde en premier : est-ce trop concentré, à quel point ça peut baisser, et quels titres tombent ensemble.</p>
+  <article class="card"><div id="risque-contenu" class="chargement" style="min-height:10rem"></div></article>
+</section>
+
+<section id="scenarios">
+  <h2>Et si… ? Scénarios de crise</h2>
+  <p class="intro">Combien vaudrait le portefeuille demain matin si un de ces événements arrivait. Ce sont des ordres de grandeur pour se préparer, pas des prévisions.</p>
+  <article class="card"><div id="scenarios-contenu" class="chargement" style="min-height:10rem"></div></article>
 </section>
 
 <section id="calendrier-sec">
